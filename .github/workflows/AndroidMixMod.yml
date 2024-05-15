@@ -164,7 +164,7 @@ jobs:
       - name: Prepare to release
         run: |
           mkdir ../Release/signed/
-          mv ${{steps.sign_app.outputs.signedReleaseFile}} ../Release/signed/${{ env.mixmod_apk_name }}
+          mv ${{steps.sign_app.outputs.signedReleaseFile}} ../Release/signed/HearthstoneMixMod_${{ secrets.VERSION }}.apk
       - uses: "ncipollo/release-action@v1"
         with:
           tag: "${{ secrets.VERSION }}"
