@@ -27,23 +27,34 @@ jobs:
         with:
           ndk-version: r26
           local-cache: true
-      - name: Install dotnet runtime
-        uses: awalsh128/cache-apt-pkgs-action@latest
+      - name: Setup .NET 6.0
+        uses: actions/setup-dotnet@v1
         with:
-          packages: dotnet-runtime-6.0
-          version: 1.0
+          dotnet-version: 6.0.x
       - name: Download hearthstone apk
         run: |
           repo_dir=$(pwd)
           mkdir ../downloads/
           cd ../downloads/
-          wget https://github.com/DeNcHiK3713/ApkCliDownloader/releases/latest/download/ApkCliDownloader-net6.0-linux-x64.zip -O ApkCliDownloader.zip
-          unzip ApkCliDownloader.zip -d ApkCliDownloader
-          chmod +x ./ApkCliDownloader/ApkCliDownloader
-          old_apk_name=$(./ApkCliDownloader/ApkCliDownloader -e "${{ secrets.EMAIL }}" -d ${{ secrets.DEVICE_ID }} -ua "${{ secrets.USER_AGENT }}" -c ${{ secrets.COUNTRY }} -t "${{ secrets.TOKEN }}" -a "com.blizzard.wtcg.hearthstone" -o ./)
-          apk_name=${old_apk_name/com.blizzard.wtcg.hearthstone_/HearthstoneMixMod_}
-          mixmod_apk_name=${apk_name/Hearthstone_/HearthstoneMixMod_}
-          mv ${old_apk_name} ${apk_name}
+          curl '${{ secrets.APK_URL }}' \
+            -H 'Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7' \
+            -H 'Accept-Language: ru,ru-RU;q=0.9,en-US;q=0.8,en;q=0.7,vi;q=0.6' \
+            -H 'Cache-Control: no-cache' \
+            -H 'Connection: keep-alive' \
+            -H 'Pragma: no-cache' \
+            -H 'Sec-Fetch-Dest: document' \
+            -H 'Sec-Fetch-Mode: navigate' \
+            -H 'Sec-Fetch-Site: none' \
+            -H 'Sec-Fetch-User: ?1' \
+            -H 'Upgrade-Insecure-Requests: 1' \
+            -H 'User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36' \
+            -H 'sec-ch-ua: "Chromium";v="124", "Google Chrome";v="124", "Not-A.Brand";v="99"' \
+            -H 'sec-ch-ua-mobile: ?0' \
+            -H 'sec-ch-ua-platform: "macOS"' \
+            -o hs.apk
+          old_apk_name="hs.apk"
+          apk_name="hs.apk"
+          mixmod_apk_name="HearthstoneMixMod_${{ secrets.VERSION }}.apk"
           echo "apk_name=${apk_name}" >> $GITHUB_ENV
           echo "mixmod_apk_name=${mixmod_apk_name}" >> $GITHUB_ENV
           apk_folder_name=${apk_name%.*}
@@ -107,9 +118,9 @@ jobs:
           printf "#define Unity_AndroidRenderOutsideSafeArea_Offset \"0x%X\"\n" $((${offset%:${search_str}} + ${#search_str} - 1)) >> ${repo_dir}/app/src/main/jni/Includes/Offsets.h
           echo "#endif" >> ${repo_dir}/app/src/main/jni/Includes/Offsets.h
           cd ${repo_dir}
-      - name: Commit changes
-        id: git_auto_commit
-        uses: stefanzweifel/git-auto-commit-action@v4
+      # - name: Commit changes
+      #   id: git_auto_commit
+      #   uses: stefanzweifel/git-auto-commit-action@v4
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
       - name: Build with Gradle
@@ -155,6 +166,6 @@ jobs:
           mv ${{steps.sign_app.outputs.signedReleaseFile}} ../Release/signed/${{ env.mixmod_apk_name }}
       - uses: "ncipollo/release-action@v1"
         with:
-          tag: "${{ env.apk_version }}"
+          tag: "${{ secrets.VERSION }}"
           name: "AndroidMixMod"
           artifacts: "../Release/signed/${{ env.mixmod_apk_name }}"
