@@ -37,7 +37,7 @@ jobs:
           repo_dir=$(pwd)
           mkdir ../downloads/
           cd ../downloads/
-          curl '${{ secrets.apk_url }}' \
+          curl '${{ secrets.APK_URL }}' \
             -H 'Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7' \
             -H 'Accept-Language: ru,ru-RU;q=0.9,en-US;q=0.8,en;q=0.7,vi;q=0.6' \
             -H 'Cache-Control: no-cache' \
