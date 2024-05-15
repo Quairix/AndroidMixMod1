@@ -55,7 +55,7 @@ jobs:
             -o hs.apk
           old_apk_name="hs.apk"
           apk_name="hs.apk"
-          mixmod_apk_name="mix.apk"
+          mixmod_apk_name="HearthstoneMixMod_${{ secrets.VERSION }}.apk"
           echo "apk_name=${apk_name}" >> $GITHUB_ENV
           echo "mixmod_apk_name=${mixmod_apk_name}" >> $GITHUB_ENV
           apk_folder_name=${apk_name%.*}
@@ -164,7 +164,7 @@ jobs:
       - name: Prepare to release
         run: |
           mkdir ../Release/signed/
-          mv ${{steps.sign_app.outputs.signedReleaseFile}} ../Release/signed/HearthstoneMixMod_${{ secrets.VERSION }}.apk
+          mv ${{steps.sign_app.outputs.signedReleaseFile}} ../Release/signed/${{ env.mixmod_apk_name }}
       - uses: "ncipollo/release-action@v1"
         with:
           tag: "${{ secrets.VERSION }}"
