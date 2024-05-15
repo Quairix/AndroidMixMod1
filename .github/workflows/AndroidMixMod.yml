@@ -52,11 +52,10 @@ jobs:
             -H 'sec-ch-ua: "Chromium";v="124", "Google Chrome";v="124", "Not-A.Brand";v="99"' \
             -H 'sec-ch-ua-mobile: ?0' \
             -H 'sec-ch-ua-platform: "macOS"' \
-            -o old_apk.apk
-          old_apk_name="old_apk.apk"
-          apk_name=${old_apk_name/com.blizzard.wtcg.hearthstone_/HearthstoneMixMod_}
-          mixmod_apk_name=${apk_name/Hearthstone_/HearthstoneMixMod_}
-          mv ${old_apk_name} ${apk_name}
+            -o hs.apk
+          old_apk_name="hs.apk"
+          apk_name="hs.apk"
+          mixmod_apk_name="mix.apk"
           echo "apk_name=${apk_name}" >> $GITHUB_ENV
           echo "mixmod_apk_name=${mixmod_apk_name}" >> $GITHUB_ENV
           apk_folder_name=${apk_name%.*}
