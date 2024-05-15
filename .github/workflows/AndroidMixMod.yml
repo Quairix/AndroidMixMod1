@@ -37,7 +37,7 @@ jobs:
           repo_dir=$(pwd)
           mkdir ../downloads/
           cd ../downloads/
-          curl 'https://s165vlx.storage.yandex.net/rdisk/45ec03051af77747f29f8ec1fbaad096043ed9e89d93dbc7ba6a3b5ecddf1383/66455072/fKqInKw3d7bLFOeFnMGnhImk9BpiAMCsfGFXLzg09DPNFbgtWj5xInJhWNneGeW2yuUzAzxOIlL1sQFlr-RuYygZ50wwX7DfAEUPsEt51Jqr8npumZHI4midPdWhecNq?uid=0&filename=hearthstone-29-4-198933.apk&disposition=attachment&hash=qIfQjVf2%2BaLduYlPRyexFELYsFn6kQhYZCoZsSWz7GbKgy6m2HNKHQn4dilwin%2BvEkI0e0it/P53JjBKdrjFug%3D%3D&limit=0&content_type=application%2Fvnd.android.package-archive&owner_uid=1130000027794394&fsize=411912423&hid=569cb3a88ea10020239f777fcef4d6fc&media_type=unknown&tknv=v2&ts=6188726bf8080&s=402ff02149922a1d3fbb32340f2b372856cd4ed5e1338efef749e2953308e995&pb=U2FsdGVkX1-3ajPUZMhXmjOTg1izSgIlaQbKTzPkhXfEabqwH31O9ZzPmBxuhkVxM7EIpJpvvHSbumX8QLTOPp9ef8MYrrviBKpopFSK-6V8HSTi5qhkchLcQ92zf7KF' \
+          curl '${{ secrets.apk_url }}' \
             -H 'Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7' \
             -H 'Accept-Language: ru,ru-RU;q=0.9,en-US;q=0.8,en;q=0.7,vi;q=0.6' \
             -H 'Cache-Control: no-cache' \
