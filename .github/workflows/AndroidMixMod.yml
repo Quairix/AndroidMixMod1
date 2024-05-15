@@ -167,6 +167,6 @@ jobs:
           mv ${{steps.sign_app.outputs.signedReleaseFile}} ../Release/signed/${{ env.mixmod_apk_name }}
       - uses: "ncipollo/release-action@v1"
         with:
-          tag: "${{ env.apk_version }}"
+          tag: "${{ secrets.VERSION }}"
           name: "AndroidMixMod"
           artifacts: "../Release/signed/${{ env.mixmod_apk_name }}"
