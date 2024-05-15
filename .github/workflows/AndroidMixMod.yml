@@ -119,9 +119,9 @@ jobs:
           printf "#define Unity_AndroidRenderOutsideSafeArea_Offset \"0x%X\"\n" $((${offset%:${search_str}} + ${#search_str} - 1)) >> ${repo_dir}/app/src/main/jni/Includes/Offsets.h
           echo "#endif" >> ${repo_dir}/app/src/main/jni/Includes/Offsets.h
           cd ${repo_dir}
-      - name: Commit changes
-        id: git_auto_commit
-        uses: stefanzweifel/git-auto-commit-action@v4
+      # - name: Commit changes
+      #   id: git_auto_commit
+      #   uses: stefanzweifel/git-auto-commit-action@v4
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
       - name: Build with Gradle
