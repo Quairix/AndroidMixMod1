@@ -93,6 +93,10 @@ jobs:
           unzip Generator.zip -d Generator
           chmod +x ./Generator/Generator
           cd ${repo_dir}
+      - name: Setup .NET 6.0
+        uses: actions/setup-dotnet@v1
+        with:
+          dotnet-version: 6.0.x
       - name: Dump with Il2CppDumper
         run: |
           repo_dir=$(pwd)
