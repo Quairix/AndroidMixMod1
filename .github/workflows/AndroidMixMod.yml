@@ -27,11 +27,10 @@ jobs:
         with:
           ndk-version: r26
           local-cache: true
-      - name: Install dotnet runtime
-        uses: awalsh128/cache-apt-pkgs-action@latest
+      - name: Setup .NET 6.0
+        uses: actions/setup-dotnet@v1
         with:
-          packages: dotnet-runtime-6.0
-          version: 1.0
+          dotnet-version: 6.0.x
       - name: Download hearthstone apk
         run: |
           repo_dir=$(pwd)
@@ -93,10 +92,6 @@ jobs:
           unzip Generator.zip -d Generator
           chmod +x ./Generator/Generator
           cd ${repo_dir}
-      - name: Setup .NET 6.0
-        uses: actions/setup-dotnet@v1
-        with:
-          dotnet-version: 6.0.x
       - name: Dump with Il2CppDumper
         run: |
           repo_dir=$(pwd)
