@@ -2,7 +2,11 @@ name: AndroidMixMod workflow
 
 on:
   workflow_dispatch:
-
+  push:
+    branches:
+      - main
+      - 'releases/**'
+      
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -62,7 +66,7 @@ jobs:
           echo "apk_version=${apk_folder_name#*_}" >> $GITHUB_ENV
           cd ${repo_dir}
       - name: Download Apktool
-        run: wget https://github.com/iBotPeaches/Apktool/releases/download/v2.8.1/apktool_2.9.3.jar -O ../downloads/apktool.jar
+        run: wget https://github.com/iBotPeaches/Apktool/releases/download/v2.9.3/apktool_2.9.3.jar -O ../downloads/apktool.jar
       - name: Decompile hearthstone apk
         run: |
           repo_dir=$(pwd)
