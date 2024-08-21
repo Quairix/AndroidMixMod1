@@ -301,22 +301,6 @@
   },
   {
     "$type": "Generator.OffsetLines.AlwaysBranchPatch, Generator",
-    "Text": "MulliganManager_HandleGameStart_Patch",
-    "Target": {
-      "$type": "Generator.OffsetLines.TextLine, Generator",
-      "Section": 0,
-      "Text": "MulliganManager_HandleGameStart_Offset",
-      "Name": "MulliganManager$$HandleGameStart"
-    },
-    "CalledMethod": {
-      "$type": "Generator.OffsetLines.TextLine, Generator",
-      "Section": 0,
-      "Text": "Cheats_ShouldSkipMulligan_Offset",
-      "Name": "Cheats$$ShouldSkipMulligan"
-    }
-  },
-  {
-    "$type": "Generator.OffsetLines.AlwaysBranchPatch, Generator",
     "Text": "EmoteHandler_EmoteSpamBlocked_Patch",
     "Target": {
       "$type": "Generator.OffsetLines.TextLine, Generator",
@@ -580,12 +564,6 @@
     "Section": 0,
     "Text": "EntityBase_HasTag_Offset",
     "Name": "EntityBase$$HasTag"
-  },
-  {
-    "$type": "Generator.OffsetLines.TextLine, Generator",
-    "Section": 0,
-    "Text": "UpdateUtils_GetAndroidStoreUrl_Offset",
-    "Name": "UpdateUtils$$GetAndroidStoreUrl"
   },
   {
     "$type": "Generator.OffsetLines.TextLine, Generator",

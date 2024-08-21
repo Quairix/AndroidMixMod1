@@ -393,10 +393,6 @@ PegasusShared_Platform_o *Network_GetPlatformBuilder(Network_o *_this) {
     return result;
 }
 
-System_String_o *UpdateUtils_GetAndroidStoreUrl(int store) {
-    return u"https://github.com/DeNcHiK3713/AndroidMixMod/releases/latest"_SS;
-}
-
 void Localization_SetPegLocaleName(Localization_o* _this, System_String_o* localeName) {
     il2cpp::Localization_SetPegLocaleName(_this, localeName);
     if (useDefaultLanguage) {
@@ -657,9 +653,6 @@ void *hack_thread(void *) {
     HOOK(Network_GetPlatformBuilder_Offset, Network_GetPlatformBuilder,
          il2cpp::Network_GetPlatformBuilder);
 
-    HOOK(UpdateUtils_GetAndroidStoreUrl_Offset, UpdateUtils_GetAndroidStoreUrl,
-         il2cpp::UpdateUtils_GetAndroidStoreUrl);
-
     il2cpp::Localization_GetLocaleName = reinterpret_cast<System_String_o *(*)()>(
         getAbsoluteAddressStr(targetLibName, Localization_GetLocaleName_Offset));
 
@@ -794,8 +787,7 @@ void Changes(JNIEnv *env, jclass clazz, jobject obj,
             }
             break;
         case 2:
-            PATCH_SWITCH(MulliganManager_HandleGameStart_Patch_Offset,
-                         MulliganManager_HandleGameStart_Patch_Data, boolean);
+            // тут был MulliganManager
             break;
         case 3:
             PATCH_SWITCH(TB_BaconShop_HandleGameOverWithTiming_Patch_Offset,
