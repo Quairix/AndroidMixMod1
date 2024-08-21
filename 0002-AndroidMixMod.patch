@@ -1,54 +1,9 @@
-Subject: [PATCH] 0002-AndroidMixMod
----
-Index: smali/com/blizzard/wtcg/hearthstone/LoadingScreen.smali
-IDEA additional info:
-Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
-<+>UTF-8
-===================================================================
-diff --git a/smali/com/blizzard/wtcg/hearthstone/LoadingScreen.smali b/smali/com/blizzard/wtcg/hearthstone/LoadingScreen.smali
---- a/smali/com/blizzard/wtcg/hearthstone/LoadingScreen.smali	(revision c6329a4433d85b724947abb69583d6cd652d7aad)
-+++ b/smali/com/blizzard/wtcg/hearthstone/LoadingScreen.smali	(date 1724236171656)
-@@ -834,6 +834,30 @@
- .end method
- 
- .method public OpenAppStore()Z
-+    .locals 3
-+
-+    new-instance v0, Landroid/content/Intent;
-+
-+    const-string v1, "https://github.com/DeNcHiK3713/AndroidMixMod/releases/latest"
-+
-+    invoke-static {v1}, Landroid/net/Uri;->parse(Ljava/lang/String;)Landroid/net/Uri;
-+
-+    move-result-object v1
-+	
-+    const-string v2, "android.intent.action.VIEW"
-+
-+    invoke-direct {v0, v2, v1}, Landroid/content/Intent;-><init>(Ljava/lang/String;Landroid/net/Uri;)V
-+
-+    iget-object v1, p0, Lcom/blizzard/wtcg/hearthstone/LoadingScreen;->_this:Landroid/app/Activity;
-+
-+    invoke-virtual {v1, v0}, Landroid/app/Activity;->startActivity(Landroid/content/Intent;)V
-+	
-+    const/4 v1, 0x1
-+
-+    return v1
-+.end method
-+
-+.method public Orig_OpenAppStore()Z
-     .locals 14
- 
-     const-string v0, "OA00752154"
-Index: AndroidManifest.xml
-IDEA additional info:
-Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
-<+>UTF-8
-===================================================================
 diff --git a/AndroidManifest.xml b/AndroidManifest.xml
---- a/AndroidManifest.xml	(revision c6329a4433d85b724947abb69583d6cd652d7aad)
-+++ b/AndroidManifest.xml	(date 1724236187716)
+index 82d3ceb..4c8ed9a 100644
+--- a/AndroidManifest.xml
++++ b/AndroidManifest.xml
 @@ -1,6 +1,7 @@
- <?xml version="1.0" encoding="utf-8" standalone="no"?><manifest xmlns:amazon="http://schemas.amazon.com/apk/res/android" xmlns:android="http://schemas.android.com/apk/res/android" android:compileSdkVersion="34" android:compileSdkVersionCodename="14" android:installLocation="auto" android:isSplitRequired="true" android:requiredSplitTypes="base__abi,base__density" android:splitTypes="" package="com.blizzard.wtcg.hearthstone" platformBuildVersionCode="34" platformBuildVersionName="14">
+ <?xml version="1.0" encoding="utf-8" standalone="no"?><manifest xmlns:amazon="http://schemas.amazon.com/apk/res/android" xmlns:android="http://schemas.android.com/apk/res/android" android:compileSdkVersion="34" android:compileSdkVersionCodename="14" android:installLocation="auto" android:requiredSplitTypes="base__abi,base__density" android:splitTypes="" package="com.blizzard.wtcg.hearthstone" platformBuildVersionCode="34" platformBuildVersionName="14">
      <uses-permission android:name="com.android.vending.BILLING"/>
      <uses-permission android:name="com.google.android.finsky.permission.BIND_GET_INSTALL_REFERRER_SERVICE"/>
 +    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW"/>
@@ -63,14 +18,23 @@ diff --git a/AndroidManifest.xml b/AndroidManifest.xml
          <meta-data android:name="com.blizzard.wtcg.hearthstone.Store" android:value="Google"/>
          <service android:exported="false" android:label="@string/service_app_name" android:name="com.blizzard.agent.Service" android:process=":blizzardagentservice"/>
          <meta-data android:name="com.blizzard.agent.notification_icon" android:resource="@drawable/ic_push_notification"/>
-Index: smali/com/blizzard/wtcg/hearthstone/FileUtils.smali
-IDEA additional info:
-Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
-<+>UTF-8
-===================================================================
+diff --git a/smali/com/blizzard/mobile/auth/internal/packagevalidator/BasePackageValidator.smali b/smali/com/blizzard/mobile/auth/internal/packagevalidator/BasePackageValidator.smali
+index 269b629..02ab9eb 100644
+--- a/smali/com/blizzard/mobile/auth/internal/packagevalidator/BasePackageValidator.smali
++++ b/smali/com/blizzard/mobile/auth/internal/packagevalidator/BasePackageValidator.smali
+@@ -302,7 +302,7 @@
+     .line 6
+     invoke-virtual {v4, v3}, Ljava/lang/String;->equals(Ljava/lang/Object;)Z
+ 
+-    move-result v3
++    const/4 v3, 0x1
+ 
+     if-eqz v3, :cond_0
+ 
 diff --git a/smali/com/blizzard/wtcg/hearthstone/FileUtils.smali b/smali/com/blizzard/wtcg/hearthstone/FileUtils.smali
---- a/smali/com/blizzard/wtcg/hearthstone/FileUtils.smali	(revision c6329a4433d85b724947abb69583d6cd652d7aad)
-+++ b/smali/com/blizzard/wtcg/hearthstone/FileUtils.smali	(date 1724236171640)
+index 0300e9d..9e82812 100644
+--- a/smali/com/blizzard/wtcg/hearthstone/FileUtils.smali
++++ b/smali/com/blizzard/wtcg/hearthstone/FileUtils.smali
 @@ -1298,7 +1298,23 @@
  .end method
  
@@ -104,14 +68,10 @@ diff --git a/smali/com/blizzard/wtcg/hearthstone/FileUtils.smali b/smali/com/bli
      return-object v0
  .end method
  
-Index: smali/com/blizzard/wtcg/hearthstone/HearthstoneActivity.smali
-IDEA additional info:
-Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
-<+>UTF-8
-===================================================================
 diff --git a/smali/com/blizzard/wtcg/hearthstone/HearthstoneActivity.smali b/smali/com/blizzard/wtcg/hearthstone/HearthstoneActivity.smali
---- a/smali/com/blizzard/wtcg/hearthstone/HearthstoneActivity.smali	(revision c6329a4433d85b724947abb69583d6cd652d7aad)
-+++ b/smali/com/blizzard/wtcg/hearthstone/HearthstoneActivity.smali	(date 1724236171640)
+index 46c9fe7..5d705d9 100644
+--- a/smali/com/blizzard/wtcg/hearthstone/HearthstoneActivity.smali
++++ b/smali/com/blizzard/wtcg/hearthstone/HearthstoneActivity.smali
 @@ -399,6 +399,10 @@
  
  .method public onCreate(Landroid/os/Bundle;)V
@@ -123,20 +83,38 @@ diff --git a/smali/com/blizzard/wtcg/hearthstone/HearthstoneActivity.smali b/sma
  
      .line 1
      invoke-super {p0, p1}, Lcom/unity3d/player/HearthstoneUnityPlayerActivity;->onCreate(Landroid/os/Bundle;)V
-Index: smali/com/blizzard/mobile/auth/internal/packagevalidator/BasePackageValidator.smali
-IDEA additional info:
-Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
-<+>UTF-8
-===================================================================
-diff --git a/smali/com/blizzard/mobile/auth/internal/packagevalidator/BasePackageValidator.smali b/smali/com/blizzard/mobile/auth/internal/packagevalidator/BasePackageValidator.smali
---- a/smali/com/blizzard/mobile/auth/internal/packagevalidator/BasePackageValidator.smali	(revision c6329a4433d85b724947abb69583d6cd652d7aad)
-+++ b/smali/com/blizzard/mobile/auth/internal/packagevalidator/BasePackageValidator.smali	(date 1724236171624)
-@@ -302,7 +302,7 @@
-     .line 6
-     invoke-virtual {v4, v3}, Ljava/lang/String;->equals(Ljava/lang/Object;)Z
+diff --git a/smali/com/blizzard/wtcg/hearthstone/LoadingScreen.smali b/smali/com/blizzard/wtcg/hearthstone/LoadingScreen.smali
+index ca942af..c42439e 100644
+--- a/smali/com/blizzard/wtcg/hearthstone/LoadingScreen.smali
++++ b/smali/com/blizzard/wtcg/hearthstone/LoadingScreen.smali
+@@ -834,6 +834,30 @@
+ .end method
  
--    move-result v3
-+    const/4 v3, 0x1
+ .method public OpenAppStore()Z
++    .locals 3
++
++    new-instance v0, Landroid/content/Intent;
++
++    const-string v1, "https://github.com/DeNcHiK3713/AndroidMixMod/releases/latest"
++
++    invoke-static {v1}, Landroid/net/Uri;->parse(Ljava/lang/String;)Landroid/net/Uri;
++
++    move-result-object v1
++	
++    const-string v2, "android.intent.action.VIEW"
++
++    invoke-direct {v0, v2, v1}, Landroid/content/Intent;-><init>(Ljava/lang/String;Landroid/net/Uri;)V
++
++    iget-object v1, p0, Lcom/blizzard/wtcg/hearthstone/LoadingScreen;->_this:Landroid/app/Activity;
++
++    invoke-virtual {v1, v0}, Landroid/app/Activity;->startActivity(Landroid/content/Intent;)V
++	
++    const/4 v1, 0x1
++
++    return v1
++.end method
++
++.method public Orig_OpenAppStore()Z
+     .locals 14
  
-     if-eqz v3, :cond_0
- 
+     const-string v0, "OA00752154"
