@@ -78,6 +78,9 @@ jobs:
           repo_dir=$(pwd)
           cd ../downloads/${{ env.apk_folder_name }}/
           git apply ${repo_dir}/0002-AndroidMixMod.patch
+          ls
+          echo ==========
+          cat AndroidManifest.xml
           cd ${repo_dir}
       - name: Download Il2CppDumper
         run: |
