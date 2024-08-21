@@ -101,9 +101,9 @@ jobs:
           repo_dir=$(pwd)
           cd ../downloads/
           mkdir arm64-v8a
-          ./Il2CppDumper/Il2CppDumper.exe ./${{ env.apk_folder_name }}/lib/arm64-v8a/libil2cpp.so ./${{ env.apk_folder_name }}/assets/bin/Data/Managed/Metadata/global-metadata.dat ./arm64-v8a/
+          dotnet ./Il2CppDumper/Il2CppDumper.exe ./${{ env.apk_folder_name }}/lib/arm64-v8a/libil2cpp.so ./${{ env.apk_folder_name }}/assets/bin/Data/Managed/Metadata/global-metadata.dat ./arm64-v8a/
           mkdir armeabi-v7a
-          ./Il2CppDumper/Il2CppDumper.exe ./${{ env.apk_folder_name }}/lib/armeabi-v7a/libil2cpp.so ./${{ env.apk_folder_name }}/assets/bin/Data/Managed/Metadata/global-metadata.dat ./armeabi-v7a/
+          dotnet ./Il2CppDumper/Il2CppDumper.exe ./${{ env.apk_folder_name }}/lib/armeabi-v7a/libil2cpp.so ./${{ env.apk_folder_name }}/assets/bin/Data/Managed/Metadata/global-metadata.dat ./armeabi-v7a/
           ls ./arm64-v8a/
           echo ==========
           cp ./arm64-v8a/il2cpp.h ${repo_dir}/app/src/main/jni/Includes/
