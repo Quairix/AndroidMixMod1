@@ -83,7 +83,7 @@ jobs:
         run: |
           repo_dir=$(pwd)
           cd ../downloads/
-          wget https://github.com/Perfare/Il2CppDumper/releases/download/v6.7.46/Il2CppDumper-net6-win-v6.7.46.zip -O ./Il2CppDumper.zip
+          wget https://github.com/Perfare/Il2CppDumper/releases/download/v6.7.46/Il2CppDumper-net6-v6.7.46.zip -O ./Il2CppDumper.zip
           unzip Il2CppDumper.zip -d Il2CppDumper
           sed -i "s/\"GenerateDummyDll\": true/\"GenerateDummyDll\": false/" ./Il2CppDumper/config.json
           sed -i "s/\"RequireAnyKey\": true/\"RequireAnyKey\": false/" ./Il2CppDumper/config.json
@@ -101,11 +101,9 @@ jobs:
           repo_dir=$(pwd)
           cd ../downloads/
           mkdir arm64-v8a
-          dotnet ./Il2CppDumper/Il2CppDumper.exe ./${{ env.apk_folder_name }}/lib/arm64-v8a/libil2cpp.so ./${{ env.apk_folder_name }}/assets/bin/Data/Managed/Metadata/global-metadata.dat ./arm64-v8a/
+          dotnet ./Il2CppDumper/Il2CppDumper.dll ./${{ env.apk_folder_name }}/lib/arm64-v8a/libil2cpp.so ./${{ env.apk_folder_name }}/assets/bin/Data/Managed/Metadata/global-metadata.dat ./arm64-v8a/
           mkdir armeabi-v7a
-          dotnet ./Il2CppDumper/Il2CppDumper.exe ./${{ env.apk_folder_name }}/lib/armeabi-v7a/libil2cpp.so ./${{ env.apk_folder_name }}/assets/bin/Data/Managed/Metadata/global-metadata.dat ./armeabi-v7a/
-          ls ./arm64-v8a/
-          echo ==========
+          dotnet ./Il2CppDumper/Il2CppDumper.dll ./${{ env.apk_folder_name }}/lib/armeabi-v7a/libil2cpp.so ./${{ env.apk_folder_name }}/assets/bin/Data/Managed/Metadata/global-metadata.dat ./armeabi-v7a/
           cp ./arm64-v8a/il2cpp.h ${repo_dir}/app/src/main/jni/Includes/
           sed -i "s/std\(in\|out\|err\)/_std\1/g" ${repo_dir}/app/src/main/jni/Includes/il2cpp.h
           cd ${repo_dir}
