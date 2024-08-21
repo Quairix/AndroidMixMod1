@@ -83,7 +83,7 @@ jobs:
         run: |
           repo_dir=$(pwd)
           cd ../downloads/
-          wget $(jq -r '.assets[] | select(.name | contains("net6") and (contains("win") | not)) | .browser_download_url' <<< $(curl --silent https://api.github.com/repos/Perfare/Il2CppDumper/releases/latest)) -O ./Il2CppDumper.zip
+          wget https://github.com/Perfare/Il2CppDumper/releases/download/v6.7.46/Il2CppDumper-net6-win-v6.7.46.zip -O ./Il2CppDumper.zip
           unzip Il2CppDumper.zip -d Il2CppDumper
           sed -i "s/\"GenerateDummyDll\": true/\"GenerateDummyDll\": false/" ./Il2CppDumper/config.json
           sed -i "s/\"RequireAnyKey\": true/\"RequireAnyKey\": false/" ./Il2CppDumper/config.json
