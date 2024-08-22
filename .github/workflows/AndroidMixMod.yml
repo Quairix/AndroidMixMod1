@@ -110,19 +110,10 @@ jobs:
           ls -la ./armeabi-v7a
           # cp ./arm64-v8a/il2cpp.h ${repo_dir}/app/src/main/jni/Includes/
           # sed -i "s/std\(in\|out\|err\)/_std\1/g" ${repo_dir}/app/src/main/jni/Includes/il2cpp.h
-          cd ${repo_dir}
-      - name: Dump with Il2CppDumper (no cpp)
-        run: |
-          cd ../downloads/
           dotnet ./Il2CppDumper/Il2CppDumper.dll ./${{ env.apk_folder_name }}/lib/arm64-v8a/libil2cpp.so ./${{ env.apk_folder_name }}/assets/bin/Data/Managed/Metadata/global-metadata.dat ./arm64-v8a/ --no-cpp
-      - name: Check libil2cpp.so encryption
-        run: |
-          cd ../downloads/
           file ./${{ env.apk_folder_name }}/lib/arm64-v8a/libil2cpp.so
-      - name: Check Unity version
-        run: |
-          cd ../downloads/
           strings ./${{ env.apk_folder_name }}/lib/arm64-v8a/libunity.so | grep "^[0-9]\+\.[0-9]\+\.[0-9]\+f[0-9]\+"
+          cd ${repo_dir}
       - name: Generate offsets
         run: |
           repo_dir=$(pwd)
