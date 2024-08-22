@@ -108,16 +108,28 @@ jobs:
           ls -la ./arm64-v8a
           echo "Contents of ./armeabi-v7a:"
           ls -la ./armeabi-v7a
-          cp ./armeabi-v7a/il2cpp.h ${repo_dir}/app/src/main/jni/Includes/
+          cp ./arm64-v8a/il2cpp.h ${repo_dir}/app/src/main/jni/Includes/
           sed -i "s/std\(in\|out\|err\)/_std\1/g" ${repo_dir}/app/src/main/jni/Includes/il2cpp.h
           cd ${repo_dir}
+      - name: Dump with Il2CppInspector
+        run: |
+          dotnet ./Il2CppInspector/Il2CppInspector.CLI.dll ./${{ env.apk_folder_name }}/lib/arm64-v8a/libil2cpp.so ./${{ env.apk_folder_name }}/assets/bin/Data/Managed/Metadata/global-metadata.dat -o ./arm64-v8a-inspector
+      - name: Dump with Il2CppDumper (no cpp)
+        run: |
+          dotnet ./Il2CppDumper/Il2CppDumper.dll ./${{ env.apk_folder_name }}/lib/arm64-v8a/libil2cpp.so ./${{ env.apk_folder_name }}/assets/bin/Data/Managed/Metadata/global-metadata.dat ./arm64-v8a/ --no-cpp
+      - name: Check libil2cpp.so encryption
+        run: |
+          file ./${{ env.apk_folder_name }}/lib/arm64-v8a/libil2cpp.so
+      - name: Check Unity version
+        run: |
+          strings ./${{ env.apk_folder_name }}/lib/arm64-v8a/libunity.so | grep "^[0-9]\+\.[0-9]\+\.[0-9]\+f[0-9]\+"
       - name: Generate offsets
         run: |
           repo_dir=$(pwd)
           cd ../downloads/
           search_str="androidRenderOutsideSafeArea"
           echo "#ifdef __aarch64__" > ${repo_dir}/app/src/main/jni/Includes/Offsets.h
-          ./Generator/Generator ${repo_dir}/OffsetsTemplate.json ./armeabi-v7a/script.json ./${{ env.apk_folder_name }}/lib/armeabi-v7a/libil2cpp.so ARM >> ${repo_dir}/app/src/main/jni/Includes/Offsets.h
+          ./Generator/Generator ${repo_dir}/OffsetsTemplate.json ./arm64-v8a/script.json ./${{ env.apk_folder_name }}/lib/arm64-v8a/libil2cpp.so ARM64 >> ${repo_dir}/app/src/main/jni/Includes/Offsets.h
           offset=$(grep -oba -m1 -o ${search_str} ./${{ env.apk_folder_name }}/lib/armeabi-v7a/libunity.so)
           printf "#define Unity_AndroidRenderOutsideSafeArea_Offset \"0x%X\"\n" $((${offset%:${search_str}} + ${#search_str} - 1)) >> ${repo_dir}/app/src/main/jni/Includes/Offsets.h
           echo -e "#else\n" >> ${repo_dir}/app/src/main/jni/Includes/Offsets.h
