@@ -108,6 +108,29 @@ jobs:
           ls -la ./arm64-v8a
           echo "Contents of ./armeabi-v7a:"
           ls -la ./armeabi-v7a
+
+          libil2cpp_path="./${{ env.apk_folder_name }}/lib/arm64-v8a/libil2cpp.so"
+              metadata_path="./${{ env.apk_folder_name }}/assets/bin/Data/Managed/Metadata/global-metadata.dat"
+              
+              if [ -f "$libil2cpp_path" ]; then
+                echo "libil2cpp.so exists."
+                ls -l "$libil2cpp_path"
+              else
+                echo "ERROR: libil2cpp.so does not exist at $libil2cpp_path"
+              fi
+              
+              if [ -f "$metadata_path" ]; then
+                echo "global-metadata.dat exists."
+                ls -l "$metadata_path"
+              else
+                echo "ERROR: global-metadata.dat does not exist at $metadata_path"
+              fi
+              
+              if [ ! -f "$libil2cpp_path" ] || [ ! -f "$metadata_path" ]; then
+                echo "One or both required files are missing. Exiting."
+                exit 1
+              fi
+          
           # cp ./arm64-v8a/il2cpp.h ${repo_dir}/app/src/main/jni/Includes/
           # sed -i "s/std\(in\|out\|err\)/_std\1/g" ${repo_dir}/app/src/main/jni/Includes/il2cpp.h
           dotnet ./Il2CppDumper/Il2CppDumper.dll ./${{ env.apk_folder_name }}/lib/arm64-v8a/libil2cpp.so ./${{ env.apk_folder_name }}/assets/bin/Data/Managed/Metadata/global-metadata.dat ./arm64-v8a/ --no-cpp
