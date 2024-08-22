@@ -113,15 +113,19 @@ jobs:
           cd ${repo_dir}
       - name: Dump with Il2CppInspector
         run: |
+          cd ../downloads/
           dotnet ./Il2CppInspector/Il2CppInspector.CLI.dll ./${{ env.apk_folder_name }}/lib/arm64-v8a/libil2cpp.so ./${{ env.apk_folder_name }}/assets/bin/Data/Managed/Metadata/global-metadata.dat -o ./arm64-v8a-inspector
       - name: Dump with Il2CppDumper (no cpp)
         run: |
+          cd ../downloads/
           dotnet ./Il2CppDumper/Il2CppDumper.dll ./${{ env.apk_folder_name }}/lib/arm64-v8a/libil2cpp.so ./${{ env.apk_folder_name }}/assets/bin/Data/Managed/Metadata/global-metadata.dat ./arm64-v8a/ --no-cpp
       - name: Check libil2cpp.so encryption
         run: |
+          cd ../downloads/
           file ./${{ env.apk_folder_name }}/lib/arm64-v8a/libil2cpp.so
       - name: Check Unity version
         run: |
+          cd ../downloads/
           strings ./${{ env.apk_folder_name }}/lib/arm64-v8a/libunity.so | grep "^[0-9]\+\.[0-9]\+\.[0-9]\+f[0-9]\+"
       - name: Generate offsets
         run: |
