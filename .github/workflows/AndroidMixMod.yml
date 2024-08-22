@@ -111,10 +111,6 @@ jobs:
           # cp ./arm64-v8a/il2cpp.h ${repo_dir}/app/src/main/jni/Includes/
           # sed -i "s/std\(in\|out\|err\)/_std\1/g" ${repo_dir}/app/src/main/jni/Includes/il2cpp.h
           cd ${repo_dir}
-      - name: Dump with Il2CppInspector
-        run: |
-          cd ../downloads/
-          dotnet ./Il2CppInspector/Il2CppInspector.CLI.dll ./${{ env.apk_folder_name }}/lib/arm64-v8a/libil2cpp.so ./${{ env.apk_folder_name }}/assets/bin/Data/Managed/Metadata/global-metadata.dat -o ./arm64-v8a-inspector
       - name: Dump with Il2CppDumper (no cpp)
         run: |
           cd ../downloads/
