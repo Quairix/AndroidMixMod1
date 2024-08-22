@@ -117,7 +117,7 @@ jobs:
           cd ../downloads/
           search_str="androidRenderOutsideSafeArea"
           echo "#ifdef __aarch64__" > ${repo_dir}/app/src/main/jni/Includes/Offsets.h
-          ./Generator/Generator ${repo_dir}/OffsetsTemplate.json ./armeabi-v7a/script.json ./${{ env.apk_folder_name }}/lib/armeabi-v7a/libil2cpp.so ARM64 >> ${repo_dir}/app/src/main/jni/Includes/Offsets.h
+          ./Generator/Generator ${repo_dir}/OffsetsTemplate.json ./armeabi-v7a/script.json ./${{ env.apk_folder_name }}/lib/armeabi-v7a/libil2cpp.so ARM >> ${repo_dir}/app/src/main/jni/Includes/Offsets.h
           offset=$(grep -oba -m1 -o ${search_str} ./${{ env.apk_folder_name }}/lib/armeabi-v7a/libunity.so)
           printf "#define Unity_AndroidRenderOutsideSafeArea_Offset \"0x%X\"\n" $((${offset%:${search_str}} + ${#search_str} - 1)) >> ${repo_dir}/app/src/main/jni/Includes/Offsets.h
           echo -e "#else\n" >> ${repo_dir}/app/src/main/jni/Includes/Offsets.h
