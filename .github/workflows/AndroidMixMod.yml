@@ -201,5 +201,5 @@ jobs:
       - uses: "ncipollo/release-action@v1"
         with:
           tag: "${{ secrets.VERSION }}"
-          name: "AndroidMixMod"
+          name: "v. ${{ secrets.VERSION }}"
           artifacts: "../Release/signed/${{ env.mixmod_apk_name }}"
