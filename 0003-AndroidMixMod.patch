@@ -22,41 +22,6 @@ IDEA additional info:
 Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
 <+>UTF-8
 ===================================================================
-diff --git a/smali/com/blizzard/wtcg/hearthstone/LoadingScreen.smali b/smali/com/blizzard/wtcg/hearthstone/LoadingScreen.smali
---- a/smali/com/blizzard/wtcg/hearthstone/LoadingScreen.smali	(revision 6cc9afe4e56871b5ba5c69dbcfbc3a08e96ce98c)
-+++ b/smali/com/blizzard/wtcg/hearthstone/LoadingScreen.smali	(date 1728693663464)
-@@ -796,6 +796,31 @@
- .end method
- 
- .method public OpenAppStore(Ljava/lang/String;Ljava/lang/String;)V
-+
-+    .locals 3
-+
-+    new-instance v0, Landroid/content/Intent;
-+
-+    const-string v1, "https://github.com/DeNcHiK3713/AndroidMixMod/releases/latest"
-+
-+    invoke-static {v1}, Landroid/net/Uri;->parse(Ljava/lang/String;)Landroid/net/Uri;
-+
-+    move-result-object v1
-+
-+    const-string v2, "android.intent.action.VIEW"
-+
-+    invoke-direct {v0, v2, v1}, Landroid/content/Intent;-><init>(Ljava/lang/String;Landroid/net/Uri;)V
-+
-+    iget-object v1, p0, Lcom/blizzard/wtcg/hearthstone/LoadingScreen;->_this:Landroid/app/Activity;
-+
-+    invoke-virtual {v1, v0}, Landroid/app/Activity;->startActivity(Landroid/content/Intent;)V
-+
-+    const/4 v1, 0x1
-+
-+    return v1
-+.end method
-+
-+.method public Orig_OpenAppStore(Ljava/lang/String;Ljava/lang/String;)Z
-     .locals 3
- 
-     const-string v0, "android.intent.action.VIEW"
 
 diff --git a/smali/com/blizzard/mobile/auth/internal/packagevalidator/BasePackageValidator.smali b/smali/com/blizzard/mobile/auth/internal/packagevalidator/BasePackageValidator.smali
 index 269b629..02ab9eb 100644

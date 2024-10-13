@@ -584,12 +584,6 @@
   {
     "$type": "Generator.OffsetLines.TextLine, Generator",
     "Section": 0,
-    "Text": "UpdateUtils_GetAndroidStoreUrl_Offset",
-    "Name": "UpdateUtils$$GetAndroidStoreUrl"
-  },
-  {
-    "$type": "Generator.OffsetLines.TextLine, Generator",
-    "Section": 0,
     "Text": "Localization_GetLocaleName_Offset",
     "Name": "Localization$$GetLocaleName"
   },

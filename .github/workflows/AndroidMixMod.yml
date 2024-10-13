@@ -21,14 +21,6 @@ jobs:
           distribution: 'temurin'
           cache: gradle
 
-      - name: Cache Android SDK
-        uses: actions/cache@v3
-        with:
-          path: ~/.android
-          key: android-sdk-${{ runner.os }}-${{ hashFiles('**/*.gradle*', '**/build.gradle*') }}
-          restore-keys: |
-            android-sdk-${{ runner.os }}-
-
       - name: Setup Gradle
         uses: gradle/gradle-build-action@v2
         with:
@@ -41,6 +33,14 @@ jobs:
           key: ndk-${{ runner.os }}-r26
           restore-keys: |
             ndk-${{ runner.os }}-
+
+      - name: Cache Android SDK
+        uses: actions/cache@v3
+        with:
+          path: ~/.android
+          key: android-sdk-${{ runner.os }}-${{ hashFiles('**/build.gradle', '**/build.gradle.kts') }}
+          restore-keys: |
+            android-sdk-${{ runner.os }}-
 
       - name: Setup Android SDK
         uses: android-actions/setup-android@v2
@@ -88,8 +88,16 @@ jobs:
           echo "apk_folder_name=${apk_folder_name}" >> $GITHUB_ENV
           echo "apk_version=${apk_folder_name#*_}" >> $GITHUB_ENV
           cd ${repo_dir}
+
+      - name: Cache Apktool
+        uses: actions/cache@v3
+        with:
+          path: ../downloads/apktool.jar
+          key: apktool-v2.9.3
       - name: Download Apktool
+        if: steps.cache.outputs.cache-hit != 'true'  # Скачать, только если кэша нет
         run: wget https://github.com/iBotPeaches/Apktool/releases/download/v2.9.3/apktool_2.9.3.jar -O ../downloads/apktool.jar
+
       - name: Decompile hearthstone apk
         run: |
           repo_dir=$(pwd)
@@ -135,7 +143,13 @@ jobs:
           name: patch-conflicts
           path: ${{ env.repo_dir }}/conflicts
           
+      - name: Cache Il2CppDumper
+        uses: actions/cache@v3
+        with:
+          path: ../downloads/Il2CppDumper
+          key: il2cppdumper-v6.7.46
       - name: Download Il2CppDumper
+        if: steps.cache.outputs.cache-hit != 'true'  # Скачать, только если кэша нет
         run: |
           repo_dir=$(pwd)
           cd ../downloads/
@@ -144,7 +158,14 @@ jobs:
           sed -i "s/\"GenerateDummyDll\": true/\"GenerateDummyDll\": false/" ./Il2CppDumper/config.json
           sed -i "s/\"RequireAnyKey\": true/\"RequireAnyKey\": false/" ./Il2CppDumper/config.json
           cd ${repo_dir}
+
+      - name: Cache Generator
+        uses: actions/cache@v3
+        with:
+          path: ../downloads/Generator
+          key: generator-latest
       - name: Download Generator
+        if: steps.cache.outputs.cache-hit != 'true'  # Скачать, только если кэша нет
         run: |
           repo_dir=$(pwd)
           cd ../downloads/
@@ -152,6 +173,18 @@ jobs:
           unzip Generator.zip -d Generator
           chmod +x ./Generator/Generator
           cd ${repo_dir}
+
+# На случай если нужен будет лог
+#  echo "Full path to arm64-v8a:"
+#  realpath ./arm64-v8a
+#  echo "Contents of ./arm64-v8a:"
+#  ls -la ./arm64-v8a
+#  echo "Contents of downloads directory:"
+#  ls -la ../downloads
+#  cp ./arm64-v8a/script.json ${repo_dir}/script.json
+#  echo "Contents of ./hs:"
+#  ls -la ./${{ env.apk_folder_name }}/lib/
+
       - name: Dump with Il2CppDumper
         run: |
           repo_dir=$(pwd)
@@ -160,10 +193,6 @@ jobs:
           dotnet ./Il2CppDumper/Il2CppDumper.dll ./${{ env.apk_folder_name }}/lib/arm64-v8a/libil2cpp.so ./${{ env.apk_folder_name }}/assets/bin/Data/Managed/Metadata/global-metadata.dat ./arm64-v8a/
           mkdir armeabi-v7a
           dotnet ./Il2CppDumper/Il2CppDumper.dll ./${{ env.apk_folder_name }}/lib/armeabi-v7a/libil2cpp.so ./${{ env.apk_folder_name }}/assets/bin/Data/Managed/Metadata/global-metadata.dat ./armeabi-v7a/
-          echo "Contents of ./arm64-v8a:"
-          ls -la ./arm64-v8a
-          echo "Contents of ./hs:"
-          ls -la ./${{ env.apk_folder_name }}/lib/
 
           libil2cpp_path="./${{ env.apk_folder_name }}/lib/arm64-v8a/libil2cpp.so"
               metadata_path="./${{ env.apk_folder_name }}/assets/bin/Data/Managed/Metadata/global-metadata.dat"
@@ -194,12 +223,31 @@ jobs:
           strings ./${{ env.apk_folder_name }}/lib/arm64-v8a/libunity.so | grep "^[0-9]\+\.[0-9]\+\.[0-9]\+f[0-9]\+"
           cd ${repo_dir}
 
+      - name: Copy script.json
+        run: |
+          repo_dir=$(pwd)
+          cd ../downloads/
+          cp ./arm64-v8a/script.json ${{ github.workspace }}/script.json
+          cp ./${{ env.apk_folder_name }}/lib/arm64-v8a/libil2cpp.so ${{ github.workspace }}/libil2cpp.so
+          if [ -f "${{ github.workspace }}/script.json" ]; then
+            echo "script.json found."
+          else
+            echo "script.json not found."
+          fi
+
       - name: Save script.json to artifacts
         if: always()
         uses: actions/upload-artifact@v3
         with:
           name: script-json
-          path: ./arm64-v8a/script.json
+          path: ${{ github.workspace }}/script.json
+
+      - name: Save libil2cpp to artifacts
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: libil2cpp
+          path: ${{ github.workspace }}/libil2cpp.so
 
       - name: Generate offsets
         run: |
@@ -216,9 +264,7 @@ jobs:
           printf "#define Unity_AndroidRenderOutsideSafeArea_Offset \"0x%X\"\n" $((${offset%:${search_str}} + ${#search_str} - 1)) >> ${repo_dir}/app/src/main/jni/Includes/Offsets.h
           echo "#endif" >> ${repo_dir}/app/src/main/jni/Includes/Offsets.h
           cd ${repo_dir}
-      # - name: Commit changes
-      #   id: git_auto_commit
-      #   uses: stefanzweifel/git-auto-commit-action@v4
+
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
       - name: Build with Gradle
