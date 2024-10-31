@@ -169,13 +169,9 @@ jobs:
         run: |
           repo_dir=$(pwd)
           cd ../downloads/
-          wget https://github.com/Quairix/Generator/releases/download/v0.0.33/Generator-linux-x64.tar.gz -O Generator.tar.gz
-          mkdir -p Generator
-          # Распаковываем архив в директорию Generator
-          tar -xzvf Generator.tar.gz -C Generator
-          # Делаем исполняемый файл доступным для выполнения
+          wget https://github.com/Quairix/Generator/releases/download/ScriptJson/Generator-linux-x64.tar.gz -O Generator.tar.gz
+          tar -xzvf Generator.tar.gz -C ./Generator
           chmod +x ./Generator/Generator
-          # Возвращаемся в исходную директорию
           cd ${repo_dir}
 
 # На случай если нужен будет лог
