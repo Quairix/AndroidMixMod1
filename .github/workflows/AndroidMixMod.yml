@@ -165,12 +165,12 @@ jobs:
           path: ../downloads/Generator
           key: generator-latest
       - name: Download Generator
-        if: steps.cache.outputs.cache-hit != 'true'
+        if: steps.cache.outputs.cache-hit != 'true'  # Скачать, только если кэша нет
         run: |
           repo_dir=$(pwd)
           cd ../downloads/
-          wget https://github.com/Quairix/Generator/releases/download/ScriptJson/Generator-linux-x64.tar.gz -O Generator.tar.gz
-          tar -xzvf Generator.tar.gz -C ./Generator
+          wget https://github.com/DeNcHiK3713/Generator/releases/latest/download/Generator-net6.0-linux-x64.zip -O ./Generator.zip
+          unzip Generator.zip -d Generator
           chmod +x ./Generator/Generator
           cd ${repo_dir}
 
