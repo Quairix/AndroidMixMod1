@@ -176,7 +176,7 @@ jobs:
           # Делаем исполняемый файл доступным для выполнения
           chmod +x ./Generator/Generator
           # Возвращаемся в исходную директорию
-          cd "$repo_dir
+          cd ${repo_dir}
 
 # На случай если нужен будет лог
 #  echo "Full path to arm64-v8a:"
