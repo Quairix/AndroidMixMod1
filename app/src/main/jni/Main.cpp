@@ -787,8 +787,7 @@ void Changes(JNIEnv *env, jclass clazz, jobject obj,
             }
             break;
         case 2:
-            PATCH_SWITCH(MulliganManager_HandleGameStart_Patch_Offset,
-                         MulliganManager_HandleGameStart_Patch_Data, boolean);
+            // тут был MulliganManager
             break;
         case 3:
             PATCH_SWITCH(TB_BaconShop_HandleGameOverWithTiming_Patch_Offset,
