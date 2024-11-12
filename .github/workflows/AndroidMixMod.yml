@@ -120,10 +120,10 @@ jobs:
           ls -la smali/com
           cp --parents \
             AndroidManifest.xml \
-            smali/com/blizzard/mobile/auth/internal/packagevalidator/BasePackageValidator.smali \
-            smali/com/blizzard/wtcg/hearthstone/FileUtils.smali \
-            smali/com/blizzard/wtcg/hearthstone/HearthstoneActivity.smali \
-            smali/com/blizzard/wtcg/hearthstone/LoadingScreen.smali \
+            smali/com/netease/mobile/auth/internal/packagevalidator/BasePackageValidator.smali \
+            smali/com/netease/wtcg/hearthstone/FileUtils.smali \
+            smali/com/netease/wtcg/hearthstone/HearthstoneActivity.smali \
+            smali/com/netease/wtcg/hearthstone/LoadingScreen.smali \
             apktool.yml \
             $GITHUB_WORKSPACE/original_files
           cd -
