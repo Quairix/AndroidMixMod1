@@ -116,8 +116,8 @@ jobs:
         run: |
           mkdir -p $GITHUB_WORKSPACE/original_files
           cd ../downloads/${{ env.apk_folder_name }}
-          ls
-          ls -la smali/com/blizzard
+          ls -la smali
+          ls -la smali/com
           cp --parents \
             AndroidManifest.xml \
             smali/com/blizzard/mobile/auth/internal/packagevalidator/BasePackageValidator.smali \
