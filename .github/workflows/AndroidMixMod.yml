@@ -5,6 +5,7 @@ on:
   push:
     branches:
       - main
+      - china_ver
       - 'releases/**'
       
 jobs:
@@ -115,6 +116,8 @@ jobs:
         run: |
           mkdir -p $GITHUB_WORKSPACE/original_files
           cd ../downloads/${{ env.apk_folder_name }}
+          ls
+          ls -la smali/com/blizzard
           cp --parents \
             AndroidManifest.xml \
             smali/com/blizzard/mobile/auth/internal/packagevalidator/BasePackageValidator.smali \
