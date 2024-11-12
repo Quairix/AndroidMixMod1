@@ -116,8 +116,8 @@ jobs:
         run: |
           mkdir -p $GITHUB_WORKSPACE/original_files
           cd ../downloads/${{ env.apk_folder_name }}
-          ls -la smali
-          ls -la smali/com
+          ls smali/com/netease
+          ls smali
           cp --parents \
             AndroidManifest.xml \
             smali/com/netease/mobile/auth/internal/packagevalidator/BasePackageValidator.smali \
