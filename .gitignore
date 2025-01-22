@@ -86,3 +86,17 @@ lint/tmp/
 
 # Android Profiling
 *.hprof
+/apktool.jar
+/Generator.zip
+/Il2CppDumper.zip
+/downloads/Il2CppDumper/
+/MixMod/
+/Release/
+/releases/
+/downloads/
+/.vscode/
+/gradle/
+gradle/
+/downloads/Generator/
+/gradle/wrapper/
+/.idea/

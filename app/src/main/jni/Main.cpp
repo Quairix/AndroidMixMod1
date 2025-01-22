@@ -660,16 +660,16 @@ void *hack_thread(void *) {
         il2cpp::Localization_SetPegLocaleName);
 
 //#if MatchingQueueTab_Update_Patch_Offset = "0"
-    PATCH(MatchingQueueTab_Update_Patch_Offset, MatchingQueueTab_Update_Patch_Data);
+//    PATCH(MatchingQueueTab_Update_Patch_Offset, MatchingQueueTab_Update_Patch_Data);
 //#endif
 
 //#if ThinkEmoteManager_Update_Patch_Offset != "0"
-    PATCH(ThinkEmoteManager_Update_Patch_Offset, ThinkEmoteManager_Update_Patch_Data);
+//    PATCH(ThinkEmoteManager_Update_Patch_Offset, ThinkEmoteManager_Update_Patch_Data);
 //#endif
 
 //#if PlatformSettings_EmulateMobileDevice_Patch_Offset != "0"
-    PATCH(PlatformSettings_EmulateMobileDevice_Patch_Offset,
-          PlatformSettings_EmulateMobileDevice_Patch_Data);
+//    PATCH(PlatformSettings_EmulateMobileDevice_Patch_Offset,
+//          PlatformSettings_EmulateMobileDevice_Patch_Data);
 //#endif
 
     //Anti-leech
@@ -790,28 +790,28 @@ void Changes(JNIEnv *env, jclass clazz, jobject obj,
             // тут был MulliganManager
             break;
         case 3:
-            PATCH_SWITCH(TB_BaconShop_HandleGameOverWithTiming_Patch_Offset,
-                         TB_BaconShop_HandleGameOverWithTiming_Patch_Data, boolean);
-            PATCH_SWITCH(TB_BaconShop_PlayBobLineWithoutText_Patch_Offset,
-                         TB_BaconShop_PlayBobLineWithoutText_Patch_Data, boolean);
+//            PATCH_SWITCH(TB_BaconShop_HandleGameOverWithTiming_Patch_Offset,
+//                         TB_BaconShop_HandleGameOverWithTiming_Patch_Data, boolean);
+//            PATCH_SWITCH(TB_BaconShop_PlayBobLineWithoutText_Patch_Offset,
+//                         TB_BaconShop_PlayBobLineWithoutText_Patch_Data, boolean);
             break;
         case 4:
-            PATCH_SWITCH(EmoteHandler_EmoteSpamBlocked_Patch_Offset,
-                         EmoteHandler_EmoteSpamBlocked_Patch_Data, boolean);
+//            PATCH_SWITCH(EmoteHandler_EmoteSpamBlocked_Patch_Offset,
+//                         EmoteHandler_EmoteSpamBlocked_Patch_Data, boolean);
             break;
         case 5:
-            PATCH_SWITCH(EmoteHandler_HandleInput_Patch_Offset, EmoteHandler_HandleInput_Patch_Data,
-                         boolean);
+//            PATCH_SWITCH(EmoteHandler_HandleInput_Patch_Offset, EmoteHandler_HandleInput_Patch_Data,
+//                         boolean);
             break;
         case 6:
             emoteSpamBlocker = boolean;
-            PATCH_SWITCH(EnemyEmoteHandler_Awake_Patch_Offset, EnemyEmoteHandler_Awake_Patch_Data,
-                         emoteSpamBlocker && emotesBeforeBlock == 0);
+//            PATCH_SWITCH(EnemyEmoteHandler_Awake_Patch_Offset, EnemyEmoteHandler_Awake_Patch_Data,
+//                         emoteSpamBlocker && emotesBeforeBlock == 0);
             break;
         case 7:
             emotesBeforeBlock = value;
-            PATCH_SWITCH(EnemyEmoteHandler_Awake_Patch_Offset, EnemyEmoteHandler_Awake_Patch_Data,
-                         emoteSpamBlocker && emotesBeforeBlock == 0);
+//            PATCH_SWITCH(EnemyEmoteHandler_Awake_Patch_Offset, EnemyEmoteHandler_Awake_Patch_Data,
+//                         emoteSpamBlocker && emotesBeforeBlock == 0);
             break;
         case 8:
             disableThinkEmotes = boolean;
@@ -826,10 +826,10 @@ void Changes(JNIEnv *env, jclass clazz, jobject obj,
             signature = static_cast<CardState>(value);
             break;
         case 11:
-            PATCH_SWITCH(NameBanner_Initialize_Patch_Offset, NameBanner_Initialize_Patch_Data,
-                         boolean);
-            PATCH_SWITCH(NameBanner_UpdateMedalWhenReady_Patch_Offset,
-                         NameBanner_UpdateMedalWhenReady_Patch_Data, boolean);
+//            PATCH_SWITCH(NameBanner_Initialize_Patch_Offset, NameBanner_Initialize_Patch_Data,
+//                         boolean);
+//            PATCH_SWITCH(NameBanner_UpdateMedalWhenReady_Patch_Offset,
+//                         NameBanner_UpdateMedalWhenReady_Patch_Data, boolean);
             break;
         case 16:
             devicePreset = static_cast<DevicePreset>(value);
@@ -880,8 +880,8 @@ void Changes(JNIEnv *env, jclass clazz, jobject obj,
             }
             break;
         case -11:
-            PATCH_LIB_SWITCH("libunity.so", Unity_AndroidRenderOutsideSafeArea_Offset, "31",
-                             boolean);
+//            PATCH_LIB_SWITCH("libunity.so", Unity_AndroidRenderOutsideSafeArea_Offset, "31",
+//                             boolean);
             break;
         case -10:
             switch (value) {

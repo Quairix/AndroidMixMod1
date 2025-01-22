@@ -1,8 +1,14 @@
 # AndroidMixMod1
 
-## Download apk from latest [release](https://github.com/Quairix/AndroidMixMod1/releases)
+## Download
+Скачайте APK-файл последнего [release](https://github.com/Quairix/AndroidMixMod1/releases)
 
-## For PC mod see [MixMod](https://github.com/DeNcHiK3713/MixMod/)
+Важно: Для установки обновлений не требуется удалять уже установленное приложение. Новая версия устанавливается поверх предыдущей, сохраняя все данные и настройки.
 
-## Credits
-https://github.com/LGLTeam/Android-Mod-Menu
+## PC mod
+Для модификации для ПК смотрите [MixMod](https://github.com/DeNcHiK3713/MixMod/)
+
+## Installation
+Скачайте последнюю версию APK.
+Запустите установку на вашем устройстве Android.
+Если приложение уже установлено, обновление установится поверх предыдущей версии.

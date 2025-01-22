@@ -6,33 +6,25 @@ on:
     branches:
       - main
       - 'releases/**'
-      
+
 jobs:
-  build:
+  setup:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Set up JDK 11
+      - name: Set up JDK 17
         uses: actions/setup-java@v3
         with:
-          java-version: '11'
+          java-version: '17'
           distribution: 'temurin'
           cache: gradle
 
       - name: Setup Gradle
-        uses: gradle/gradle-build-action@v2
+        uses: gradle/actions/setup-gradle@v4
         with:
-          gradle-version: 7.5.1
-
-      - name: Cache NDK
-        uses: actions/cache@v3
-        with:
-          path: ~/.android/ndk
-          key: ndk-${{ runner.os }}-r26
-          restore-keys: |
-            ndk-${{ runner.os }}-
+          gradle-version: 8.10
 
       - name: Cache Android SDK
         uses: actions/cache@v3
@@ -43,14 +35,10 @@ jobs:
             android-sdk-${{ runner.os }}-
 
       - name: Setup Android SDK
-        uses: android-actions/setup-android@v2
-
-      - name: Setup NDK
-        uses: nttld/setup-ndk@v1
-        id: setup-ndk
+        uses: android-actions/setup-android@v3
         with:
-          ndk-version: r26
-          local-cache: true
+          cmdline-tools-version: 12266719
+          packages: 'platform-tools platforms;android-31 build-tools;30.0.3 ndk;26.3.11579264'
 
       - name: Cache .NET packages
         uses: actions/cache@v3
@@ -64,252 +52,193 @@ jobs:
         uses: actions/setup-dotnet@v1
         with:
           dotnet-version: 6.0.x
+
+  download:
+    runs-on: ubuntu-latest
+    needs: setup
+    outputs:
+      apk_name: ${{ steps.set-vars.outputs.apk_name }}
+      mixmod_apk_name: ${{ steps.set-vars.outputs.mixmod_apk_name }}
+      apk_folder_name: ${{ steps.set-vars.outputs.apk_folder_name }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Create downloads directory
+        run: mkdir -p downloads
+
       - name: Cache Hearthstone APK
+        id: apk-cache
         uses: actions/cache@v3
         with:
-          path: ../downloads/hs.apk
-          key: hs-apk-${{ secrets.VERSION }}
+          path: downloads/hs.apk
+          key: hs-apk
           restore-keys: |
             hs-apk-
 
       - name: Download Hearthstone APK
-        if: steps.cache.outputs.cache-hit != 'true'
+        if: steps.apk-cache.outputs.cache-hit != 'true'
+        continue-on-error: true
         run: |
-          repo_dir=$(pwd)
-          mkdir -p ../downloads/
-          cd ../downloads/
-          curl '${{ secrets.APK_URL }}' -o hs.apk
-          old_apk_name="hs.apk"
+          curl -L "${{ secrets.APK_URL }}" -o downloads/hs.apk
+
+      - name: Process Hearthstone APK and set variables
+        id: set-vars
+        run: |
           apk_name="hs.apk"
           mixmod_apk_name="HearthstoneMixMod_${{ secrets.VERSION }}.apk"
-          echo "apk_name=${apk_name}" >> $GITHUB_ENV
-          echo "mixmod_apk_name=${mixmod_apk_name}" >> $GITHUB_ENV
-          apk_folder_name=${apk_name%.*}
-          echo "apk_folder_name=${apk_folder_name}" >> $GITHUB_ENV
-          echo "apk_version=${apk_folder_name#*_}" >> $GITHUB_ENV
-          cd ${repo_dir}
+          apk_folder_name="${apk_name%.*}"
+          echo "::set-output name=apk_name::${apk_name}"
+          echo "::set-output name=mixmod_apk_name::${mixmod_apk_name}"
+          echo "::set-output name=apk_folder_name::${apk_folder_name}"
 
       - name: Cache Apktool
+        id: apktool-cache
         uses: actions/cache@v3
         with:
-          path: ../downloads/apktool.jar
+          path: downloads/apktool.jar
           key: apktool-v2.9.3
+          restore-keys: |
+            apktool-
+
       - name: Download Apktool
-        if: steps.cache.outputs.cache-hit != 'true'  # Скачать, только если кэша нет
-        run: wget https://github.com/iBotPeaches/Apktool/releases/download/v2.9.3/apktool_2.9.3.jar -O ../downloads/apktool.jar
+        if: steps.apktool-cache.outputs.cache-hit != 'true'
+        run: wget https://github.com/iBotPeaches/Apktool/releases/download/v2.9.3/apktool_2.9.3.jar -O downloads/apktool.jar
 
-      - name: Decompile hearthstone apk
-        run: |
-          repo_dir=$(pwd)
-          cd ../downloads/
-          java -jar apktool.jar d ${{ env.apk_name }} -o ${{ env.apk_folder_name }}
-          cd ${repo_dir}
-
-      - name: Set variables
-        id: vars
-        run: |
-          echo "repo_dir=$(pwd)" >> $GITHUB_ENV
-          echo "apk_folder_path=../downloads/${{ env.apk_folder_name }}" >> $GITHUB_ENV
-      
-      - name: Save original files before patch
-        run: |
-          mkdir -p $GITHUB_WORKSPACE/original_files
-          cd ../downloads/${{ env.apk_folder_name }}
-          cp --parents \
-            AndroidManifest.xml \
-            smali/com/blizzard/mobile/auth/internal/packagevalidator/BasePackageValidator.smali \
-            smali/com/blizzard/wtcg/hearthstone/FileUtils.smali \
-            smali/com/blizzard/wtcg/hearthstone/HearthstoneActivity.smali \
-            smali/com/blizzard/wtcg/hearthstone/LoadingScreen.smali \
-            apktool.yml \
-            $GITHUB_WORKSPACE/original_files
-          cd -
-
-
-      - name: Apply patch and save conflicts
-        run: |
-          cd ${{ env.apk_folder_path }}
-          git apply --reject ${{ env.repo_dir }}/0003-AndroidMixMod.patch || true
-          
-      - name: Collect conflict files
-        run: |
-          mkdir -p ./conflicts
-          find . -name "*.rej" -o -name "AndroidManifest.xml" -o -name "LoadingScreen.smali" | \
-          xargs -I {} cp --parents {} ./conflicts
-
-      - name: Upload conflict files as artifact
-        uses: actions/upload-artifact@v3
-        with:
-          name: patch-conflicts
-          path: ${{ env.repo_dir }}/conflicts
-          
       - name: Cache Il2CppDumper
+        id: il2cpp-cache
         uses: actions/cache@v3
         with:
-          path: ../downloads/Il2CppDumper
+          path: downloads/Il2CppDumper
           key: il2cppdumper-v6.7.46
+
       - name: Download Il2CppDumper
-        if: steps.cache.outputs.cache-hit != 'true'  # Скачать, только если кэша нет
+        if: steps.il2cpp-cache.outputs.cache-hit != 'true'
+        continue-on-error: true
         run: |
-          repo_dir=$(pwd)
-          cd ../downloads/
-          wget https://github.com/Perfare/Il2CppDumper/releases/download/v6.7.46/Il2CppDumper-net6-v6.7.46.zip -O ./Il2CppDumper.zip
-          unzip Il2CppDumper.zip -d Il2CppDumper
-          sed -i "s/\"GenerateDummyDll\": true/\"GenerateDummyDll\": false/" ./Il2CppDumper/config.json
-          sed -i "s/\"RequireAnyKey\": true/\"RequireAnyKey\": false/" ./Il2CppDumper/config.json
-          cd ${repo_dir}
+          wget https://github.com/Perfare/Il2CppDumper/releases/download/v6.7.46/Il2CppDumper-net6-v6.7.46.zip -O downloads/Il2CppDumper.zip
+          unzip downloads/Il2CppDumper.zip -d downloads/Il2CppDumper
+          sed -i "s/\"GenerateDummyDll\": true/\"GenerateDummyDll\": false/" downloads/Il2CppDumper/config.json
+          sed -i "s/\"RequireAnyKey\": true/\"RequireAnyKey\": false/" downloads/Il2CppDumper/config.json
 
       - name: Cache Generator
+        id: generator-cache
         uses: actions/cache@v3
         with:
-          path: ../downloads/Generator
+          path: downloads/Generator
           key: generator-latest
-      - name: Download Generator
-        if: steps.cache.outputs.cache-hit != 'true'  # Скачать, только если кэша нет
-        run: |
-          repo_dir=$(pwd)
-          cd ../downloads/
-          wget https://github.com/DeNcHiK3713/Generator/releases/latest/download/Generator-net6.0-linux-x64.zip -O ./Generator.zip
-          unzip Generator.zip -d Generator
-          chmod +x ./Generator/Generator
-          cd ${repo_dir}
 
-# На случай если нужен будет лог
-#  echo "Full path to arm64-v8a:"
-#  realpath ./arm64-v8a
-#  echo "Contents of ./arm64-v8a:"
-#  ls -la ./arm64-v8a
-#  echo "Contents of downloads directory:"
-#  ls -la ../downloads
-#  cp ./arm64-v8a/script.json ${repo_dir}/script.json
-#  echo "Contents of ./hs:"
-#  ls -la ./${{ env.apk_folder_name }}/lib/
+      - name: Download Generator
+        if: steps.generator-cache.outputs.cache-hit != 'true'
+        continue-on-error: true
+        run: |
+          wget https://github.com/DeNcHiK3713/Generator/releases/latest/download/Generator-net6.0-linux-x64.zip -O downloads/Generator.zip
+          unzip downloads/Generator.zip -d downloads/Generator
+          chmod +x downloads/Generator/Generator
+
+      - name: Upload downloads artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: downloads
+          path: downloads
+
+  build:
+    runs-on: ubuntu-latest
+    needs: download
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Setup .NET 6.0
+        uses: actions/setup-dotnet@v1
+        with:
+          dotnet-version: 6.0.x
+
+      - name: Setup Android SDK Build Tools
+        uses: android-actions/setup-android@v3
+        with:
+          cmdline-tools-version: 12266719
+          packages: 'build-tools;32.0.0'
+
+      - name: Download downloads artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: downloads
+          path: downloads
+
+      - name: Decompile Hearthstone APK with Apktool
+        run: |
+          java -jar $(pwd)/downloads/apktool.jar d $(pwd)/downloads/hs.apk -o downloads/hs
+        working-directory: ${{ github.workspace }}
+
+      - name: Set apk_folder_path variable
+        run: echo "apk_folder_path=$(pwd)/hs" >> $GITHUB_ENV
+        working-directory: downloads
+
+      - name: Apply patch
+        run: git apply --check ${{ github.workspace }}/0004-AndroidMixMod.patch
+        working-directory: downloads/hs
 
       - name: Dump with Il2CppDumper
         run: |
-          repo_dir=$(pwd)
-          cd ../downloads/
-          mkdir arm64-v8a
-          dotnet ./Il2CppDumper/Il2CppDumper.dll ./${{ env.apk_folder_name }}/lib/arm64-v8a/libil2cpp.so ./${{ env.apk_folder_name }}/assets/bin/Data/Managed/Metadata/global-metadata.dat ./arm64-v8a/
-          mkdir armeabi-v7a
-          dotnet ./Il2CppDumper/Il2CppDumper.dll ./${{ env.apk_folder_name }}/lib/armeabi-v7a/libil2cpp.so ./${{ env.apk_folder_name }}/assets/bin/Data/Managed/Metadata/global-metadata.dat ./armeabi-v7a/
-
-          libil2cpp_path="./${{ env.apk_folder_name }}/lib/arm64-v8a/libil2cpp.so"
-              metadata_path="./${{ env.apk_folder_name }}/assets/bin/Data/Managed/Metadata/global-metadata.dat"
-              
-              if [ -f "$libil2cpp_path" ]; then
-                echo "libil2cpp.so exists."
-                ls -l "$libil2cpp_path"
-              else
-                echo "ERROR: libil2cpp.so does not exist at $libil2cpp_path"
-              fi
-              
-              if [ -f "$metadata_path" ]; then
-                echo "global-metadata.dat exists."
-                ls -l "$metadata_path"
-              else
-                echo "ERROR: global-metadata.dat does not exist at $metadata_path"
-              fi
-              
-              if [ ! -f "$libil2cpp_path" ] || [ ! -f "$metadata_path" ]; then
-                echo "One or both required files are missing. Exiting."
-                exit 1
-              fi
-          
-          # cp ./arm64-v8a/il2cpp.h ${repo_dir}/app/src/main/jni/Includes/
-          # sed -i "s/std\(in\|out\|err\)/_std\1/g" ${repo_dir}/app/src/main/jni/Includes/il2cpp.h
-          dotnet ./Il2CppDumper/Il2CppDumper.dll ./${{ env.apk_folder_name }}/lib/arm64-v8a/libil2cpp.so ./${{ env.apk_folder_name }}/assets/bin/Data/Managed/Metadata/global-metadata.dat ./arm64-v8a/ --no-cpp
-          file ./${{ env.apk_folder_name }}/lib/arm64-v8a/libil2cpp.so
-          strings ./${{ env.apk_folder_name }}/lib/arm64-v8a/libunity.so | grep "^[0-9]\+\.[0-9]\+\.[0-9]\+f[0-9]\+"
-          cd ${repo_dir}
-
-      - name: Copy script.json
-        run: |
-          repo_dir=$(pwd)
-          cd ../downloads/
-          cp ./arm64-v8a/script.json ${{ github.workspace }}/script.json
-          cp ./${{ env.apk_folder_name }}/lib/arm64-v8a/libil2cpp.so ${{ github.workspace }}/libil2cpp.so
-          if [ -f "${{ github.workspace }}/script.json" ]; then
-            echo "script.json found."
-          else
-            echo "script.json not found."
-          fi
-
-      - name: Save script.json to artifacts
-        if: always()
-        uses: actions/upload-artifact@v3
-        with:
-          name: script-json
-          path: ${{ github.workspace }}/script.json
-
-      - name: Save libil2cpp to artifacts
-        if: always()
-        uses: actions/upload-artifact@v3
-        with:
-          name: libil2cpp
-          path: ${{ github.workspace }}/libil2cpp.so
+          mkdir -p arm64-v8a
+          dotnet Il2CppDumper/Il2CppDumper.dll hs/lib/arm64-v8a/libil2cpp.so hs/assets/bin/Data/Managed/Metadata/global-metadata.dat arm64-v8a/
+          dotnet Il2CppDumper/Il2CppDumper.dll hs/lib/arm64-v8a/libil2cpp.so hs/assets/bin/Data/Managed/Metadata/global-metadata.dat arm64-v8a/ --no-cpp
+        working-directory: downloads
 
       - name: Generate offsets
         run: |
-          repo_dir=$(pwd)
-          cd ../downloads/
-          search_str="androidRenderOutsideSafeArea"
-          echo "#ifdef __aarch64__" > ${repo_dir}/app/src/main/jni/Includes/Offsets.h
-          ./Generator/Generator ${repo_dir}/OffsetsTemplate.json ./arm64-v8a/script.json ./${{ env.apk_folder_name }}/lib/arm64-v8a/libil2cpp.so ARM64 >> ${repo_dir}/app/src/main/jni/Includes/Offsets.h
-          offset=$(grep -oba -m1 -o ${search_str} ./${{ env.apk_folder_name }}/lib/armeabi-v7a/libunity.so)
-          printf "#define Unity_AndroidRenderOutsideSafeArea_Offset \"0x%X\"\n" $((${offset%:${search_str}} + ${#search_str} - 1)) >> ${repo_dir}/app/src/main/jni/Includes/Offsets.h
-          echo -e "#else\n" >> ${repo_dir}/app/src/main/jni/Includes/Offsets.h
-          ./Generator/Generator ${repo_dir}/OffsetsTemplate.json ./armeabi-v7a/script.json ./${{ env.apk_folder_name }}/lib/armeabi-v7a/libil2cpp.so ARM >> ${repo_dir}/app/src/main/jni/Includes/Offsets.h
-          offset=$(grep -oba -m1 -o ${search_str} ./${{ env.apk_folder_name }}/lib/armeabi-v7a/libunity.so)
-          printf "#define Unity_AndroidRenderOutsideSafeArea_Offset \"0x%X\"\n" $((${offset%:${search_str}} + ${#search_str} - 1)) >> ${repo_dir}/app/src/main/jni/Includes/Offsets.h
-          echo "#endif" >> ${repo_dir}/app/src/main/jni/Includes/Offsets.h
-          cd ${repo_dir}
+          chmod +x Generator/Generator
+          Generator/Generator ${{ github.workspace }}/OffsetsTemplate.json arm64-v8a/script.json hs/lib/arm64-v8a/libil2cpp.so ARM64 >> ${{ github.workspace }}/app/src/main/jni/Includes/Offsets.h
+        working-directory: downloads
 
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
+
       - name: Build with Gradle
-        run: ./gradlew build
-        env:
-          ANDROID_NDK_HOME: ${{ steps.setup-ndk.outputs.ndk-path }}
+        run: |
+          ./gradlew clean
+          ./gradlew build
+
       - name: Decompile apk
+        run: java -jar downloads/apktool.jar d ${{ github.workspace }}/app/build/outputs/apk/release/app-release.apk -o MixMod
+
+      - name: Modify Hearthstone apk
         run: |
-          repo_dir=$(pwd)
-          cd ../downloads/
-          java -jar apktool.jar d ${repo_dir}/app/build/outputs/apk/release/app-release.apk -o MixMod
-          cd ${repo_dir}
-      - name: Modify hearthstone apk
-        run: |
-          repo_dir=$(pwd)
-          cd ../downloads/
-          smali_dirs=(./${{ env.apk_folder_name }}/smali*)
+          smali_dirs=(./downloads/hs/smali*)
           last_smali_dir="${smali_dirs[${#smali_dirs[@]}-1]}"
-          unset smali_dirs
-          cp -R ./MixMod/smali/* $last_smali_dir
-          cp -R ./MixMod/lib/* ./${{ env.apk_folder_name }}/lib/
-          cd ${repo_dir}
-      - name: Recompile hearthstone apk
+          cp -R MixMod/smali/* "$last_smali_dir"
+          cp -R MixMod/lib/* ./downloads/hs/lib/
+
+      - name: Recompile Hearthstone apk
         run: |
-          repo_dir=$(pwd)
-          cd ../downloads/
-          mkdir ../Release/
-          java -jar apktool.jar b ${{ env.apk_folder_name }} -o ../Release/${{ env.mixmod_apk_name }}
-          cd ${repo_dir}
-      - name: Signing hearthstone apk
+          mkdir -p Release
+          java -jar downloads/apktool.jar b downloads/hs -o ./Release/HearthstoneMixMod_${{ secrets.VERSION }}.apk
+
+      - name: List Release directory
+        run: |
+          ls -la Release    
+          ls -la downloads    
+
+      - name: Signing Hearthstone apk
         uses: kevin-david/zipalign-sign-android-release@v1.1
         id: sign_app
         with:
-          releaseDirectory: ../Release/
+          releaseDirectory: Release
           signingKeyBase64: ${{ secrets.SIGNING_KEY }}
           alias: ${{ secrets.ALIAS }}
           keyStorePassword: ${{ secrets.KEY_STORE_PASSWORD }}
           keyPassword: ${{ secrets.KEY_PASSWORD }}
           zipAlign: true
+
       - name: Prepare to release
         run: |
-          mkdir ../Release/signed/
-          mv ${{steps.sign_app.outputs.signedReleaseFile}} ../Release/signed/${{ env.mixmod_apk_name }}
-      - uses: "ncipollo/release-action@v1"
+          mkdir -p Release/signed
+          mv ${{ steps.sign_app.outputs.signedReleaseFile }} Release/signed/HearthstoneMixMod_${{ secrets.VERSION }}.apk
+
+      - name: Create Release
+        uses: ncipollo/release-action@v1
         with:
           tag: "${{ secrets.VERSION }}"
           name: "v. ${{ secrets.VERSION }}"
-          artifacts: "../Release/signed/${{ env.mixmod_apk_name }}"
+          artifacts: "Release/signed/HearthstoneMixMod_${{ secrets.VERSION }}.apk"
