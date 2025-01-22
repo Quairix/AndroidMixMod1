@@ -2,22 +2,11 @@
 #ifndef ANDROID_MOD_MENU_MACROS_H
 #define ANDROID_MOD_MENU_MACROS_H
 
-#if defined(__aarch64__) //Compile for arm64 lib only
 #include <And64InlineHook/And64InlineHook.hpp>
-
-#else //Compile for armv7 lib only. Do not worry about greyed out highlighting code, it still works
-#include <Substrate/SubstrateHook.h>
-#include <Substrate/CydiaSubstrate.h>
-
-#endif
 
 void hook(void *offset, void* ptr, void **orig)
 {
-#if defined(__aarch64__)
     A64HookFunction(offset, ptr, orig);
-#else
-    MSHookFunction(offset, ptr, orig);
-#endif
 }
 
 #define HOOK(offset, ptr, orig) hook((void *)getAbsoluteAddress(targetLibName, string2Offset(OBFUSCATE(offset))), (void *)ptr, (void **)&orig)

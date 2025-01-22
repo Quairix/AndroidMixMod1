@@ -2,10 +2,14 @@
 
 package com.android.support;
 
+import static android.view.ViewGroup.LayoutParams.MATCH_PARENT;
+import static android.view.ViewGroup.LayoutParams.WRAP_CONTENT;
+import static android.widget.RelativeLayout.ALIGN_PARENT_LEFT;
+import static android.widget.RelativeLayout.ALIGN_PARENT_RIGHT;
+
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.AlertDialog;
-import android.app.Service;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -33,6 +37,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.view.inputmethod.InputMethodManager;
+import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
@@ -56,13 +61,6 @@ import android.widget.Toast;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
-
-import static android.view.ViewGroup.LayoutParams.WRAP_CONTENT;
-import static android.view.ViewGroup.LayoutParams.MATCH_PARENT;
-import static android.widget.RelativeLayout.ALIGN_PARENT_LEFT;
-import static android.widget.RelativeLayout.ALIGN_PARENT_RIGHT;
-
-import org.xml.sax.ErrorHandler;
 
 public class Menu {
     //********** Here you can easly change the menu appearance **********//
@@ -179,7 +177,14 @@ public class Menu {
                 "</html>", "text/html", "utf-8");
         wView.setBackgroundColor(0x00000000); //Transparent
         wView.setAlpha(ICON_ALPHA);
-        wView.getSettings().setAppCacheEnabled(true);
+
+        WebSettings webSettings = wView.getSettings();
+        webSettings.setCacheMode(WebSettings.LOAD_DEFAULT);
+
+        // Разрешить хранение данных (для кэша)
+        webSettings.setDomStorageEnabled(true);
+        webSettings.setDatabaseEnabled(true);
+
         wView.setOnTouchListener(onTouchListener());
 
         //********** Settings icon **********
@@ -265,21 +270,17 @@ public class Menu {
         hideBtn.setBackgroundColor(Color.TRANSPARENT);
         hideBtn.setText("HIDE/KILL (Hold)");
         hideBtn.setTextColor(TEXT_COLOR);
-        hideBtn.setOnClickListener(new View.OnClickListener() {
-            public void onClick(View view) {
-                mCollapsed.setVisibility(View.VISIBLE);
-                mCollapsed.setAlpha(0);
-                mExpanded.setVisibility(View.GONE);
-                Toast.makeText(view.getContext(), "Icon hidden. Remember the hidden icon position", Toast.LENGTH_LONG).show();
-            }
+        hideBtn.setOnClickListener(view -> {
+            mCollapsed.setVisibility(View.VISIBLE);
+            mCollapsed.setAlpha(0);
+            mExpanded.setVisibility(View.GONE);
+            Toast.makeText(view.getContext(), "Icon hidden. Remember the hidden icon position", Toast.LENGTH_LONG).show();
         });
-        hideBtn.setOnLongClickListener(new View.OnLongClickListener() {
-            public boolean onLongClick(View view) {
-                Toast.makeText(view.getContext(), "Menu killed", Toast.LENGTH_LONG).show();
-                rootFrame.removeView(mRootContainer);
-                mWindowManager.removeView(rootFrame);
-                return false;
-            }
+        hideBtn.setOnLongClickListener(view -> {
+            Toast.makeText(view.getContext(), "Menu killed", Toast.LENGTH_LONG).show();
+            rootFrame.removeView(mRootContainer);
+            mWindowManager.removeView(rootFrame);
+            return false;
         });
 
         //********** Close button **********
@@ -291,12 +292,10 @@ public class Menu {
         closeBtn.setBackgroundColor(Color.TRANSPARENT);
         closeBtn.setText("MINIMIZE");
         closeBtn.setTextColor(TEXT_COLOR);
-        closeBtn.setOnClickListener(new View.OnClickListener() {
-            public void onClick(View view) {
-                mCollapsed.setVisibility(View.VISIBLE);
-                mCollapsed.setAlpha(ICON_ALPHA);
-                mExpanded.setVisibility(View.GONE);
-            }
+        closeBtn.setOnClickListener(view -> {
+            mCollapsed.setVisibility(View.VISIBLE);
+            mCollapsed.setAlpha(ICON_ALPHA);
+            mExpanded.setVisibility(View.GONE);
         });
 
         //********** Adding view components **********
@@ -549,20 +548,18 @@ public class Menu {
         switchR.setTextColor(TEXT_COLOR_2);
         switchR.setPadding(10, 5, 0, 5);
         switchR.setChecked(Preferences.loadPrefBool(featName, featNum, swiOn));
-        switchR.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-            public void onCheckedChanged(CompoundButton compoundButton, boolean bool) {
-                Preferences.changeFeatureBool(featName, featNum, bool);
-                switch (featNum) {
-                    case -1: //Save perferences
-                        Preferences.with(switchR.getContext()).writeBoolean(-1, bool);
-                        if (bool == false)
-                            Preferences.with(switchR.getContext()).clear(); //Clear perferences if switched off
-                        break;
-                    case -3:
-                        Preferences.isExpanded = bool;
-                        scrollView.setLayoutParams(bool ? scrlLLExpanded : scrlLL);
-                        break;
-                }
+        switchR.setOnCheckedChangeListener((compoundButton, bool) -> {
+            Preferences.changeFeatureBool(featName, featNum, bool);
+            switch (featNum) {
+                case -1: //Save perferences
+                    Preferences.with(switchR.getContext()).writeBoolean(-1, bool);
+                    if (!bool)
+                        Preferences.with(switchR.getContext()).clear(); //Clear perferences if switched off
+                    break;
+                case -3:
+                    Preferences.isExpanded = bool;
+                    scrollView.setLayoutParams(bool ? scrlLLExpanded : scrlLL);
+                    break;
             }
         });
 
@@ -597,9 +594,9 @@ public class Menu {
 
             public void onProgressChanged(SeekBar seekBar, int i, boolean z) {
                 //if progress is greater than minimum, don't go below. Else, set progress
-                seekBar.setProgress(i < min ? min : i);
-                Preferences.changeFeatureInt(featName, featNum, i < min ? min : i);
-                textView.setText(Html.fromHtml(featName + ": <font color='" + NumberTxtColor + "'>" + (i < min ? min : i)));
+                seekBar.setProgress(Math.max(i, min));
+                Preferences.changeFeatureInt(featName, featNum, Math.max(i, min));
+                textView.setText(Html.fromHtml(featName + ": <font color='" + NumberTxtColor + "'>" + (Math.max(i, min))));
             }
         });
         linearLayout.addView(textView);
@@ -617,20 +614,18 @@ public class Menu {
         button.setAllCaps(false); //Disable caps to support html
         button.setText(Html.fromHtml(featName));
         button.setBackgroundColor(BTN_COLOR);
-        button.setOnClickListener(new View.OnClickListener() {
-            public void onClick(View v) {
-                switch (featNum) {
+        button.setOnClickListener(v -> {
+            switch (featNum) {
 
-                    case -6:
-                        scrollView.removeView(mSettings);
-                        scrollView.addView(mods);
-                        break;
-                    case -100:
-                        stopChecking = true;
-                        break;
-                }
-                Preferences.changeFeatureInt(featName, featNum, 0);
+                case -6:
+                    scrollView.removeView(mSettings);
+                    scrollView.addView(mods);
+                    break;
+                case -100:
+                    stopChecking = true;
+                    break;
             }
+            Preferences.changeFeatureInt(featName, featNum, 0);
         });
 
         linLayout.addView(button);
@@ -645,13 +640,11 @@ public class Menu {
         button.setTextColor(TEXT_COLOR_2);
         button.setText(Html.fromHtml(featName));
         button.setBackgroundColor(BTN_COLOR);
-        button.setOnClickListener(new View.OnClickListener() {
-            public void onClick(View v) {
-                Intent intent = new Intent(Intent.ACTION_VIEW);
-                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                intent.setData(Uri.parse(url));
-                getContext.startActivity(intent);
-            }
+        button.setOnClickListener(v -> {
+            Intent intent = new Intent(Intent.ACTION_VIEW);
+            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            intent.setData(Uri.parse(url));
+            getContext.startActivity(intent);
         });
         linLayout.addView(button);
     }
@@ -755,74 +748,70 @@ public class Menu {
         button.setLayoutParams(layoutParams);
         button.setBackgroundColor(BTN_COLOR);
         button.setTextColor(TEXT_COLOR_2);
-        button.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                AlertDialog.Builder alertName = new AlertDialog.Builder(getContext);
-                final EditText editText = new EditText(getContext);
-                if (maxValue != 0)
-                    editText.setHint("Max value: " + maxValue);
-                editText.setInputType(InputType.TYPE_CLASS_NUMBER);
-                editText.setKeyListener(DigitsKeyListener.getInstance("0123456789-"));
-                InputFilter[] FilterArray = new InputFilter[1];
-                FilterArray[0] = new InputFilter.LengthFilter(10);
-                editText.setFilters(FilterArray);
-                editText.setOnFocusChangeListener(new View.OnFocusChangeListener() {
-                    @Override
-                    public void onFocusChange(View v, boolean hasFocus) {
-                        InputMethodManager imm = (InputMethodManager) getContext.getSystemService(getContext.INPUT_METHOD_SERVICE);
-                        if (hasFocus) {
-                            imm.toggleSoftInput(InputMethodManager.SHOW_FORCED, InputMethodManager.HIDE_IMPLICIT_ONLY);
-                        } else {
-                            imm.toggleSoftInput(InputMethodManager.HIDE_IMPLICIT_ONLY, 0);
-                        }
+        button.setOnClickListener(view -> {
+            AlertDialog.Builder alertName = new AlertDialog.Builder(getContext);
+            final EditText editText = new EditText(getContext);
+            if (maxValue != 0)
+                editText.setHint("Max value: " + maxValue);
+            editText.setInputType(InputType.TYPE_CLASS_NUMBER);
+            editText.setKeyListener(DigitsKeyListener.getInstance("0123456789-"));
+            InputFilter[] FilterArray = new InputFilter[1];
+            FilterArray[0] = new InputFilter.LengthFilter(10);
+            editText.setFilters(FilterArray);
+            editText.setOnFocusChangeListener(new View.OnFocusChangeListener() {
+                @Override
+                public void onFocusChange(View v, boolean hasFocus) {
+                    InputMethodManager imm = (InputMethodManager) getContext.getSystemService(Context.INPUT_METHOD_SERVICE);
+
+                    if (hasFocus) {
+                        // Показать клавиатуру
+                        imm.showSoftInput(editText, InputMethodManager.SHOW_IMPLICIT);
+                    } else {
+                        // Скрыть клавиатуру
+                        imm.hideSoftInputFromWindow(editText.getWindowToken(), 0);
                     }
-                });
-                editText.requestFocus();
-
-                alertName.setTitle("Input number");
-                alertName.setView(editText);
-                LinearLayout layoutName = new LinearLayout(getContext);
-                layoutName.setOrientation(LinearLayout.VERTICAL);
-                layoutName.addView(editText); // displays the user input bar
-                alertName.setView(layoutName);
-
-                alertName.setPositiveButton("OK", new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int whichButton) {
-                        int num;
-                        try {
-                            num = Integer.parseInt(TextUtils.isEmpty(editText.getText().toString()) ? "0" : editText.getText().toString());
-                            if (maxValue != 0 && num >= maxValue)
-                                num = maxValue;
-                        } catch (NumberFormatException ex) {
-                            if (maxValue != 0)
-                                num = maxValue;
-                            else
-                                num = 2147483640;
-                        }
-
-                        button.setText(Html.fromHtml(featName + ": <font color='" + NumberTxtColor + "'>" + num + "</font>"));
-                        Preferences.changeFeatureInt(featName, featNum, num);
-
-                        editText.setFocusable(false);
-                    }
-                });
-
-                alertName.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int whichButton) {
-                        // dialog.cancel(); // closes dialog
-                        InputMethodManager imm = (InputMethodManager) getContext.getSystemService(getContext.INPUT_METHOD_SERVICE);
-                        imm.toggleSoftInput(InputMethodManager.HIDE_IMPLICIT_ONLY, 0);
-                    }
-                });
-
-                if (overlayRequired) {
-                    AlertDialog dialog = alertName.create(); // display the dialog
-                    dialog.getWindow().setType(Build.VERSION.SDK_INT >= 26 ? 2038 : 2002);
-                    dialog.show();
-                } else {
-                    alertName.show();
                 }
+            });
+            editText.postDelayed(editText::requestFocus, 200);
+
+            alertName.setTitle("Input number");
+            alertName.setView(editText);
+            LinearLayout layoutName = new LinearLayout(getContext);
+            layoutName.setOrientation(LinearLayout.VERTICAL);
+            layoutName.addView(editText); // displays the user input bar
+            alertName.setView(layoutName);
+
+            alertName.setPositiveButton("OK", (dialog, whichButton) -> {
+                int num1;
+                try {
+                    num1 = Integer.parseInt(TextUtils.isEmpty(editText.getText().toString()) ? "0" : editText.getText().toString());
+                    if (maxValue != 0 && num1 >= maxValue)
+                        num1 = maxValue;
+                } catch (NumberFormatException ex) {
+                    if (maxValue != 0)
+                        num1 = maxValue;
+                    else
+                        num1 = 2147483640;
+                }
+
+                button.setText(Html.fromHtml(featName + ": <font color='" + NumberTxtColor + "'>" + num1 + "</font>"));
+                Preferences.changeFeatureInt(featName, featNum, num1);
+
+                editText.setFocusable(false);
+            });
+
+            alertName.setNegativeButton("Cancel", (dialog, whichButton) -> {
+                // dialog.cancel(); // closes dialog
+                InputMethodManager imm = (InputMethodManager) getContext.getSystemService(getContext.INPUT_METHOD_SERVICE);
+                imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
+            });
+
+            if (overlayRequired) {
+                AlertDialog dialog = alertName.create(); // display the dialog
+                dialog.getWindow().setType(Build.VERSION.SDK_INT >= 26 ? 2038 : 2002);
+                dialog.show();
+            } else {
+                alertName.show();
             }
         });
 
@@ -844,57 +833,47 @@ public class Menu {
         button.setLayoutParams(layoutParams);
         button.setBackgroundColor(BTN_COLOR);
         button.setTextColor(TEXT_COLOR_2);
-        button.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                AlertDialog.Builder alertName = new AlertDialog.Builder(getContext);
+        button.setOnClickListener(view -> {
+            AlertDialog.Builder alertName = new AlertDialog.Builder(getContext);
 
-                final EditText editText = new EditText(getContext);
-                editText.setOnFocusChangeListener(new View.OnFocusChangeListener() {
-                    @Override
-                    public void onFocusChange(View v, boolean hasFocus) {
-                        InputMethodManager imm = (InputMethodManager) getContext.getSystemService(getContext.INPUT_METHOD_SERVICE);
-                        if (hasFocus) {
-                            imm.toggleSoftInput(InputMethodManager.SHOW_FORCED, InputMethodManager.HIDE_IMPLICIT_ONLY);
-                        } else {
-                            imm.toggleSoftInput(InputMethodManager.HIDE_IMPLICIT_ONLY, 0);
-                        }
-                    }
-                });
-                editText.requestFocus();
-
-                alertName.setTitle("Input text");
-                alertName.setView(editText);
-                LinearLayout layoutName = new LinearLayout(getContext);
-                layoutName.setOrientation(LinearLayout.VERTICAL);
-                layoutName.addView(editText); // displays the user input bar
-                alertName.setView(layoutName);
-
-                alertName.setPositiveButton("OK", new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int whichButton) {
-                        String str = editText.getText().toString();
-                        button.setText(Html.fromHtml(featName + ": <font color='" + NumberTxtColor + "'>" + str + "</font>"));
-                        Preferences.changeFeatureString(featName, featNum, str);
-                        editText.setFocusable(false);
-                    }
-                });
-
-                alertName.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int whichButton) {
-                        //dialog.cancel(); // closes dialog
-                        InputMethodManager imm = (InputMethodManager) getContext.getSystemService(getContext.INPUT_METHOD_SERVICE);
-                        imm.toggleSoftInput(InputMethodManager.HIDE_IMPLICIT_ONLY, 0);
-                    }
-                });
-
-
-                if (overlayRequired) {
-                    AlertDialog dialog = alertName.create(); // display the dialog
-                    dialog.getWindow().setType(Build.VERSION.SDK_INT >= 26 ? 2038 : 2002);
-                    dialog.show();
+            final EditText editText = new EditText(getContext);
+            editText.setOnFocusChangeListener((v, hasFocus) -> {
+                InputMethodManager imm = (InputMethodManager) getContext.getSystemService(getContext.INPUT_METHOD_SERVICE);
+                if (hasFocus) {
+                    imm.toggleSoftInput(InputMethodManager.SHOW_FORCED, InputMethodManager.HIDE_IMPLICIT_ONLY);
                 } else {
-                    alertName.show();
+                    imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
                 }
+            });
+            editText.requestFocus();
+
+            alertName.setTitle("Input text");
+            alertName.setView(editText);
+            LinearLayout layoutName = new LinearLayout(getContext);
+            layoutName.setOrientation(LinearLayout.VERTICAL);
+            layoutName.addView(editText); // displays the user input bar
+            alertName.setView(layoutName);
+
+            alertName.setPositiveButton("OK", (dialog, whichButton) -> {
+                String str = editText.getText().toString();
+                button.setText(Html.fromHtml(featName + ": <font color='" + NumberTxtColor + "'>" + str + "</font>"));
+                Preferences.changeFeatureString(featName, featNum, str);
+                editText.setFocusable(false);
+            });
+
+            alertName.setNegativeButton("Cancel", (dialog, whichButton) -> {
+                //dialog.cancel(); // closes dialog
+                InputMethodManager imm = (InputMethodManager) getContext.getSystemService(getContext.INPUT_METHOD_SERVICE);
+                imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
+            });
+
+
+            if (overlayRequired) {
+                AlertDialog dialog = alertName.create(); // display the dialog
+                dialog.getWindow().setType(Build.VERSION.SDK_INT >= 26 ? 2038 : 2002);
+                dialog.show();
+            } else {
+                alertName.show();
             }
         });
 
@@ -909,14 +888,11 @@ public class Menu {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP)
             checkBox.setButtonTintList(ColorStateList.valueOf(CheckBoxColor));
         checkBox.setChecked(Preferences.loadPrefBool(featName, featNum, switchedOn));
-        checkBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-            @Override
-            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                if (checkBox.isChecked()) {
-                    Preferences.changeFeatureBool(featName, featNum, isChecked);
-                } else {
-                    Preferences.changeFeatureBool(featName, featNum, isChecked);
-                }
+        checkBox.setOnCheckedChangeListener((buttonView, isChecked) -> {
+            if (checkBox.isChecked()) {
+                Preferences.changeFeatureBool(featName, featNum, isChecked);
+            } else {
+                Preferences.changeFeatureBool(featName, featNum, isChecked);
             }
         });
         linLayout.addView(checkBox);
@@ -938,11 +914,9 @@ public class Menu {
         for (int i = 0; i < lists.size(); i++) {
             final RadioButton Radioo = new RadioButton(getContext);
             final String finalfeatName = featName, radioName = lists.get(i);
-            View.OnClickListener first_radio_listener = new View.OnClickListener() {
-                public void onClick(View v) {
-                    textView.setText(Html.fromHtml(finalfeatName + ": <font color='" + NumberTxtColor + "'>" + radioName));
-                    Preferences.changeFeatureInt(finalfeatName, featNum, radioGroup.indexOfChild(Radioo));
-                }
+            View.OnClickListener first_radio_listener = v -> {
+                textView.setText(Html.fromHtml(finalfeatName + ": <font color='" + NumberTxtColor + "'>" + radioName));
+                Preferences.changeFeatureInt(finalfeatName, featNum, radioGroup.indexOfChild(Radioo));
             };
             System.out.println(lists.get(i));
             Radioo.setText(lists.get(i));
@@ -1037,7 +1011,7 @@ public class Menu {
         wView.loadData(text, "text/html", "utf-8");
         wView.setBackgroundColor(0x00000000); //Transparent
         wView.setPadding(0, 5, 0, 5);
-        wView.getSettings().setAppCacheEnabled(false);
+        wView.getSettings().setCacheMode(WebSettings.LOAD_NO_CACHE);
         linLayout.addView(wView);
     }
 

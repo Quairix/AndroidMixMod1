@@ -2,36 +2,11 @@
 
 package com.android.support;
 
-import android.app.Activity;
-import android.app.AlertDialog;
-import android.app.Application;
-import android.content.ActivityNotFoundException;
-import android.content.ClipData;
-import android.content.ClipboardManager;
 import android.content.Context;
-import android.content.DialogInterface;
-import android.content.Intent;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
-import android.content.res.Resources;
 import android.os.Build;
-import android.os.Bundle;
-import android.text.Html;
-import android.text.InputFilter;
-import android.text.InputType;
-import android.text.TextUtils;
-import android.text.method.DigitsKeyListener;
 import android.util.Log;
-import android.view.Menu;
-import android.view.MenuItem;
-import android.view.View;
-import android.view.ViewGroup;
-import android.view.inputmethod.InputMethodManager;
-import android.widget.EditText;
-import android.widget.HorizontalScrollView;
-import android.widget.LinearLayout;
-import android.widget.ScrollView;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import java.io.File;
@@ -42,6 +17,7 @@ import java.io.StringWriter;
 import java.lang.Thread.UncaughtExceptionHandler;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.Locale;
 
 public final class CrashHandler {
 
@@ -67,7 +43,7 @@ public final class CrashHandler {
             private void tryUncaughtException(Thread thread, Throwable throwable) {
                 Log.e("AppCrash", "Try saving log");
 
-                final String time = new SimpleDateFormat("yyyy_MM_dd-HH_mm_ss").format(new Date());
+                final String time = new SimpleDateFormat("yyyy_MM_dd-HH_mm_ss", Locale.US).format(new Date());
                 String fileName = "mod_menu_crash_" + time + ".txt";
                 String dirName;
 
@@ -98,19 +74,16 @@ public final class CrashHandler {
                     pw.close();
                 }
 
-                StringBuilder devInfo = new StringBuilder();
-                devInfo.append("************* Crash Head ****************\n");
-                devInfo.append("Time Of Crash      : ").append(time).append("\n");
-                devInfo.append("Device Manufacturer: ").append(Build.MANUFACTURER).append("\n");
-                devInfo.append("Device Model       : ").append(Build.MODEL).append("\n");
-                devInfo.append("Android Version    : ").append(Build.VERSION.RELEASE).append("\n");
-                devInfo.append("Android SDK        : ").append(Build.VERSION.SDK_INT).append("\n");
-                devInfo.append("App VersionName    : ").append(versionName).append("\n");
-                devInfo.append("App VersionCode    : ").append(versionCode).append("\n");
-                devInfo.append("************* Crash Head ****************\n");
-                devInfo.append("\n").append(fullStackTrace);
-
-                String errorLog = devInfo.toString();
+                String errorLog = "************* Crash Head ****************\n" +
+                        "Time Of Crash      : " + time + "\n" +
+                        "Device Manufacturer: " + Build.MANUFACTURER + "\n" +
+                        "Device Model       : " + Build.MODEL + "\n" +
+                        "Android Version    : " + Build.VERSION.RELEASE + "\n" +
+                        "Android SDK        : " + Build.VERSION.SDK_INT + "\n" +
+                        "App VersionName    : " + versionName + "\n" +
+                        "App VersionCode    : " + versionCode + "\n" +
+                        "************* Crash Head ****************\n" +
+                        "\n" + fullStackTrace;
 
                 try {
                     writeFile(crashFile, errorLog);

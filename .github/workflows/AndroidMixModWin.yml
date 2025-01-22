@@ -1,0 +1,233 @@
+name: AndroidMixMod workflow - Win
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+      - 'releases/**'
+      
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v3
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: gradle
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: 8.10
+
+      - name: Cache Android SDK
+        uses: actions/cache@v3
+        with:
+          path: ~/.android
+          key: android-sdk-${{ runner.os }}-${{ hashFiles('**/build.gradle', '**/build.gradle.kts') }}
+          restore-keys: |
+            android-sdk-${{ runner.os }}-
+
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+        with:
+          cmdline-tools-version: 12266719
+          packages: 'platform-tools platforms;android-31 build-tools;30.0.3 ndk;26.3.11579264'
+
+      - name: Cache .NET packages
+        uses: actions/cache@v3
+        with:
+          path: ~/.nuget/packages
+          key: nuget-${{ runner.os }}-${{ hashFiles('**/*.csproj', '**/*.fsproj') }}
+          restore-keys: |
+            nuget-${{ runner.os }}-
+
+      - name: Setup .NET 6.0
+        uses: actions/setup-dotnet@v1
+        with:
+          dotnet-version: 6.0.x
+
+      - name: Cache Hearthstone APK
+        uses: actions/cache@v3
+        id: apk-cache
+        with:
+          path: ${{ github.workspace }}/downloads/hs.apk
+          key: hs-apk
+          restore-keys: |
+            hs-apk-
+
+      - name: Download Hearthstone APK
+        if: steps.apk-cache.outputs.cache-hit != 'true'
+        shell: pwsh
+        run: |
+          $repoDir = Get-Location
+          New-Item -ItemType Directory -Path "${{ github.workspace }}\downloads\" -Force
+          Invoke-WebRequest -Uri "${{ secrets.APK_URL }}" -OutFile "${{ github.workspace }}\downloads\hs.apk"
+
+      - name: Process Hearthstone APK
+        shell: pwsh
+        run: |
+          $repoDir = Get-Location
+          New-Item -ItemType Directory -Path "..\downloads\" -Force
+          Copy-Item "${{ github.workspace }}\downloads\hs.apk" -Destination "..\downloads\hs.apk"
+          $apkName = "hs.apk"
+          $mixmodApkName = "HearthstoneMixMod_${{ secrets.VERSION }}.apk"
+          Write-Output "apk_name=$apkName" | Out-File -FilePath $env:GITHUB_ENV -Append
+          Write-Output "mixmod_apk_name=$mixmodApkName" | Out-File -FilePath $env:GITHUB_ENV -Append
+          $apkFolderName = [System.IO.Path]::GetFileNameWithoutExtension($apkName)
+          Write-Output "apkFolderName=$apkFolderName" | Out-File -FilePath $env:GITHUB_ENV -Append
+
+      - name: Cache Apktool
+        uses: actions/cache@v3
+        id: apktool-cache
+        with:
+          path: ../downloads/apktool.jar
+          key: apktool-v2.9.3  # Жестко фиксируем версию в ключе
+          restore-keys: |
+            apktool-
+
+      - name: Download Apktool
+        if: steps.apktool-cache.outputs.cache-hit != 'true'
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Path "..\downloads\" -Force
+          Invoke-WebRequest -Uri "https://github.com/iBotPeaches/Apktool/releases/download/v2.9.3/apktool_2.9.3.jar" -OutFile "..\downloads\apktool.jar"
+
+      - name: Decompile hearthstone apk
+        shell: pwsh
+        run: |
+            $repoDir = Get-Location
+            cd ..\downloads\
+            java -jar apktool.jar d $env:apk_name -o $env:apkFolderName
+            cd $repoDir
+
+      - name: Apply patch
+        shell: pwsh
+        run: |
+          $repoDir = Get-Location
+          cd "..\downloads\$env:apkFolderName"
+          git apply --reject "$repoDir\0004-AndroidMixMod.patch"
+
+      - name: Cache Il2CppDumper
+        uses: actions/cache@v3
+        with:
+          path: ../downloads/Il2CppDumper
+          key: il2cppdumper-v6.7.46
+
+      - name: Download Il2CppDumper
+        if: steps.cache.outputs.cache-hit != 'true'
+        shell: pwsh
+        run: |
+          $repoDir = Get-Location
+          cd ..\downloads
+          Invoke-WebRequest -Uri "https://github.com/Perfare/Il2CppDumper/releases/download/v6.7.46/Il2CppDumper-net6-win-v6.7.46.zip" -OutFile "Il2CppDumper.zip"
+          Expand-Archive -Path "Il2CppDumper.zip" -DestinationPath "Il2CppDumper"
+          (Get-Content "Il2CppDumper\config.json") -replace '"GenerateDummyDll": true', '"GenerateDummyDll": false' | Set-Content "Il2CppDumper\config.json"
+          (Get-Content "Il2CppDumper\config.json") -replace '"RequireAnyKey": true', '"RequireAnyKey": false' | Set-Content "Il2CppDumper\config.json"
+          cd $repoDir
+
+      - name: Cache Generator
+        uses: actions/cache@v3
+        with:
+          path: ../downloads/Generator
+          key: generator-latest
+      - name: Download Generator
+        if: steps.cache.outputs.cache-hit != 'true'  # Скачать, только если кэша нет
+        shell: pwsh
+        run: |
+          $repoDir = Get-Location
+          cd ..\downloads
+          Invoke-WebRequest -Uri "https://github.com/DeNcHiK3713/Generator/releases/download/v1.1.0/Generator-net6.0-win-x64.zip" -OutFile "Generator.zip"
+          Expand-Archive -Path "Generator.zip" -DestinationPath "Generator"
+          cd $repoDir
+
+      - name: Dump with Il2CppDumper
+        shell: pwsh
+        run: |
+          $repoDir = Get-Location
+          cd ..\downloads
+          New-Item -ItemType Directory -Path "arm64-v8a" -Force
+          ./Il2CppDumper/Il2CppDumper.exe ".\$env:apkFolderName\lib\arm64-v8a\libil2cpp.so" ".\$env:apkFolderName\assets\bin\Data\Managed\Metadata\global-metadata.dat" ".\arm64-v8a"
+          
+          ./Il2CppDumper/Il2CppDumper.exe ".\$env:apkFolderName\lib\arm64-v8a\libil2cpp.so" ".\$env:apkFolderName\assets\bin\Data\Managed\Metadata\global-metadata.dat" ".\arm64-v8a" --no-cpp
+          cd $repoDir
+
+      - name: Generate offsets
+        shell: pwsh
+        run: |
+          $repoDir = Get-Location
+          cd ..\downloads
+          $searchStr = "androidRenderOutsideSafeArea"
+          .\Generator\Generator.exe "$repoDir\OffsetsTemplate.json" ".\arm64-v8a\script.json" ".\$env:apkFolderName\lib\arm64-v8a\libil2cpp.so" ARM64 | Out-File -Append -FilePath "$repoDir\app\src\main\jni\Includes\Offsets.h"
+          cd $repoDir
+
+      - name: Build with Gradle
+        shell: pwsh
+        run: |
+          .\gradlew.bat clean
+          .\gradlew.bat build
+
+      - name: Decompile mod apk
+        shell: pwsh
+        run: |
+            $repoDir = Get-Location
+            cd ..\downloads\
+            java -jar apktool.jar d $repoDir/app/build/outputs/apk/release/app-release.apk -o MixMod
+            cd $repoDir
+
+      - name: Modify hearthstone apk
+        shell: pwsh
+        run: |
+          $repoDir = Get-Location
+          cd ..\downloads\
+          
+          # Находим последний smali-каталог
+          $smaliDirs = Get-ChildItem -Path ".\$env:apkFolderName" -Filter "smali*" -Directory
+          $lastSmaliDir = $smaliDirs[-1].FullName
+      
+          # Копируем smali и lib
+          Copy-Item -Path ".\MixMod\smali\*" -Destination $lastSmaliDir -Recurse -Force
+          Copy-Item -Path ".\MixMod\lib\*" -Destination ".\$env:apkFolderName\lib\" -Recurse -Force
+      
+          cd $repoDir
+
+      - name: Recompile hearthstone apk
+        shell: pwsh
+        run: |
+          $repoDir = Get-Location
+          cd ..\downloads\
+
+          # Создаем каталог для релиза
+          New-Item -ItemType Directory -Path "..\Release\" -Force
+      
+          # Пересобираем APK
+          java -jar apktool.jar b $env:apkFolderName -o "..\Release\$env:mixmod_apk_name"
+      
+          cd $repoDir
+
+      - name: Signing hearthstone apk
+        uses: kevin-david/zipalign-sign-android-release@v1.1
+        id: sign_app
+        with:
+          releaseDirectory: ../Release/
+          signingKeyBase64: ${{ secrets.SIGNING_KEY }}
+          alias: ${{ secrets.ALIAS }}
+          keyStorePassword: ${{ secrets.KEY_STORE_PASSWORD }}
+          keyPassword: ${{ secrets.KEY_PASSWORD }}
+          zipAlign: true
+      - name: Prepare to release
+        shell: pwsh
+        run: |
+          mkdir ../Release/signed/
+          mv ${{steps.sign_app.outputs.signedReleaseFile}} ../Release/signed/${{ env.mixmod_apk_name }}
+      - uses: "ncipollo/release-action@v1"
+        with:
+          tag: "${{ secrets.VERSION }}"
+          name: "v. ${{ secrets.VERSION }}"
+          artifacts: "../Release/signed/${{ env.mixmod_apk_name }}"

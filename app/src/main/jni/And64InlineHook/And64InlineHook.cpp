@@ -35,8 +35,6 @@
 #include <cstring>
 #include <errno.h>
 
-#if defined(__aarch64__)
-
 #include "And64InlineHook.hpp"
 
 #define   A64_MAX_INSTRUCTIONS 5
@@ -610,5 +608,3 @@ A64_JNIEXPORT void A64HookFunction(void *const symbol, void *const replace, void
     } //if
 }
 }
-
-#endif // defined(__aarch64__)
