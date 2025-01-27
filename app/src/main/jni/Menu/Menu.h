@@ -5,12 +5,12 @@ void setText(JNIEnv *env, jobject obj, const char* text){
     //https://stackoverflow.com/a/33627640/3763113
     //A little JNI calls here. You really really need a great knowledge if you want to play with JNI stuff
     //Html.fromHtml("");
-    jclass html = (*env).FindClass(OBFUSCATE("android/text/Html"));
-    jmethodID fromHtml = (*env).GetStaticMethodID(html, OBFUSCATE("fromHtml"), OBFUSCATE("(Ljava/lang/String;)Landroid/text/Spanned;"));
+    jclass html = (*env).FindClass(AY_OBFUSCATE("android/text/Html"));
+    jmethodID fromHtml = (*env).GetStaticMethodID(html, AY_OBFUSCATE("fromHtml"), AY_OBFUSCATE("(Ljava/lang/String;)Landroid/text/Spanned;"));
 
     //setText("");
-    jclass textView = (*env).FindClass(OBFUSCATE("android/widget/TextView"));
-    jmethodID setText = (*env).GetMethodID(textView, OBFUSCATE("setText"), OBFUSCATE("(Ljava/lang/CharSequence;)V"));
+    jclass textView = (*env).FindClass(AY_OBFUSCATE("android/widget/TextView"));
+    jmethodID setText = (*env).GetMethodID(textView, AY_OBFUSCATE("setText"), AY_OBFUSCATE("(Ljava/lang/CharSequence;)V"));
 
     //Java string
     jstring jstr = (*env).NewStringUTF(text);
@@ -30,7 +30,7 @@ jstring IconWebViewData(JNIEnv *env, jobject thiz) {
     //WebView support GIF animation. Upload your image or GIF on imgur.com or other sites
 
     // From internet (Requires android.permission.INTERNET)
-    // return env->NewStringUTF(OBFUSCATE("https://i.imgur.com/SujJ85j.gif"));
+    // return env->NewStringUTF(AY_OBFUSCATE("https://i.imgur.com/SujJ85j.gif"));
 
     // Base64 html:
     // return env->NewStringUTF("data:image/png;base64, <encoded base64 here>");

@@ -49,14 +49,14 @@ void MSLogHexEx(const void *vdata, size_t size, size_t stride, const char *mark)
     while (i != size) {
         if (i % HexWidth_ == 0) {
             if (mark != NULL)
-                b += sprintf(d + b, OBFUSCATE("\n[%s] "), mark);
-            b += sprintf(d + b, OBFUSCATE("0x%.3zx:"), i);
+                b += sprintf(d + b, AY_OBFUSCATE("\n[%s] "), mark);
+            b += sprintf(d + b, AY_OBFUSCATE("0x%.3zx:"), i);
         }
 
         b += sprintf(d + b, " ");
 
         for (size_t q(0); q != stride; ++q)
-            b += sprintf(d + b, OBFUSCATE("%.2x"), data[i + stride - q - 1]);
+            b += sprintf(d + b, AY_OBFUSCATE("%.2x"), data[i + stride - q - 1]);
 
         i += stride;
 
@@ -84,7 +84,7 @@ void MSLogHexEx(const void *vdata, size_t size, size_t stride, const char *mark)
             b += sprintf(d + b, " ");
         b += sprintf(d + b, " ");
         for (j = i / HexWidth_ * HexWidth_; j != i; ++j)
-            b += sprintf(d + b, OBFUSCATE("%c"), _MSHexChar(data[j]));
+            b += sprintf(d + b, AY_OBFUSCATE("%c"), _MSHexChar(data[j]));
 
        // lprintf("%s", d);
         b = 0;

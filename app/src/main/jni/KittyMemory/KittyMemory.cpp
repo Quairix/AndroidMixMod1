@@ -100,7 +100,7 @@ ProcMap KittyMemory::getLibraryMap(const char *libraryName) {
     ProcMap retMap;
     char line[512] = {0};
 
-    FILE *fp = fopen(OBFUSCATE("/proc/self/maps"), OBFUSCATE("rt"));
+    FILE *fp = fopen(AY_OBFUSCATE("/proc/self/maps"), AY_OBFUSCATE("rt"));
     if (fp != NULL) {
         while (fgets(line, sizeof(line), fp)) {
             if (strstr(line, libraryName)) {

@@ -45,7 +45,7 @@ struct __SubstrateMemory {
 
 extern "C" SubstrateMemoryRef SubstrateMemoryCreate(SubstrateAllocatorRef allocator, SubstrateProcessRef process, void *data, size_t size) {
     if (allocator != NULL) {
-        MSLog(MSLogLevelError, OBFUSCATE("MS:Error:allocator != %d"), 0);
+        MSLog(MSLogLevelError, AY_OBFUSCATE("MS:Error:allocator != %d"), 0);
         return NULL;
     }
 
@@ -59,7 +59,7 @@ extern "C" SubstrateMemoryRef SubstrateMemoryCreate(SubstrateAllocatorRef alloca
     void *address(reinterpret_cast<void *>(base));
 
     if (mprotect(address, width, PROT_READ | PROT_WRITE | PROT_EXEC) == -1) {
-        MSLog(MSLogLevelError, OBFUSCATE("MS:Error:mprotect() = %d"), errno);
+        MSLog(MSLogLevelError, AY_OBFUSCATE("MS:Error:mprotect() = %d"), errno);
         return NULL;
     }
 
@@ -68,7 +68,7 @@ extern "C" SubstrateMemoryRef SubstrateMemoryCreate(SubstrateAllocatorRef alloca
 
 extern "C" void SubstrateMemoryRelease(SubstrateMemoryRef memory) {
     if (mprotect(memory->address_, memory->width_, PROT_READ | PROT_WRITE | PROT_EXEC) == -1)
-        MSLog(MSLogLevelError,  OBFUSCATE("MS:Error:mprotect() = %d"), errno);
+        MSLog(MSLogLevelError,  AY_OBFUSCATE("MS:Error:mprotect() = %d"), errno);
 
     __clear_cache(reinterpret_cast<char *>(memory->address_), reinterpret_cast<char *>(memory->address_) + memory->width_);
 

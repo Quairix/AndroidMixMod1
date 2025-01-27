@@ -133,7 +133,7 @@ bool MemoryPatch::Modify() {
 
 std::string MemoryPatch::get_CurrBytes() {
     if (!isValid())
-        _hexString = std::string(OBFUSCATE("0xInvalid"));
+        _hexString = std::string(AY_OBFUSCATE("0xInvalid"));
     else
         _hexString = KittyMemory::read2HexStr(reinterpret_cast<const void *>(_address), _size);
 

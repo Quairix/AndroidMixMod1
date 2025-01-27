@@ -17,7 +17,7 @@
 #include "Localization/Localizations.h"
 
 //Target lib here
-#define targetLibName OBFUSCATE("libil2cpp.so")
+#define targetLibName AY_OBFUSCATE("libil2cpp.so")
 
 #include "Includes/Macros.h"
 #include "Includes/il2cpp.h"
@@ -418,7 +418,7 @@ void Localization_SetPegLocaleName(Localization_o* _this, System_String_o* local
 
 // we will run our hacks in a new thread so our while loop doesn't block process main thread
 void *hack_thread(void *) {
-    LOGI(OBFUSCATE("pthread created"));
+    LOGI(AY_OBFUSCATE("pthread created"));
 
     //Check if target lib is loaded
     do {
@@ -431,34 +431,34 @@ void *hack_thread(void *) {
         sleep(1);
     } while (!isLibraryLoaded("libYOURNAME.so"));*/
 
-    LOGI(OBFUSCATE("%s has been loaded"), (const char *) targetLibName);
+    LOGI(AY_OBFUSCATE("%s has been loaded"), (const char *) targetLibName);
 
     il2cpp::il2cpp_object_new = reinterpret_cast<Il2CppObject *(*)(
-            Il2CppClass *klass)>(getSymAddress(targetLibName, OBFUSCATE("il2cpp_object_new")));
+            Il2CppClass *klass)>(getSymAddress(targetLibName, AY_OBFUSCATE("il2cpp_object_new")));
     il2cpp::il2cpp_domain_get = reinterpret_cast<void *(*)()>(getSymAddress(targetLibName,
-                                                                            OBFUSCATE(
+                                                                            AY_OBFUSCATE(
                                                                                     "il2cpp_domain_get")));
     il2cpp::il2cpp_thread_attach = reinterpret_cast<void *(*)(void *domain)>(getSymAddress(
-            targetLibName, OBFUSCATE("il2cpp_thread_attach")));
+            targetLibName, AY_OBFUSCATE("il2cpp_thread_attach")));
     il2cpp::il2cpp_thread_detach = reinterpret_cast<void (*)(void *thread)>(getSymAddress(
-            targetLibName, OBFUSCATE("il2cpp_thread_detach")));
+            targetLibName, AY_OBFUSCATE("il2cpp_thread_detach")));
     il2cpp::il2cpp_gchandle_new = reinterpret_cast<uint (*)(void *object, bool weak)>(getSymAddress(
-            targetLibName, OBFUSCATE("il2cpp_gchandle_new")));
+            targetLibName, AY_OBFUSCATE("il2cpp_gchandle_new")));
     il2cpp::il2cpp_gchandle_free = reinterpret_cast<void (*)(uint gchandle)>(getSymAddress(
-            targetLibName, OBFUSCATE("il2cpp_gchandle_free")));
+            targetLibName, AY_OBFUSCATE("il2cpp_gchandle_free")));
 
     il2cpp::il2cpp_string_new = reinterpret_cast<System_String_o *(*)(
-            const char *text)>(getSymAddress(targetLibName, OBFUSCATE("il2cpp_string_new")));
+            const char *text)>(getSymAddress(targetLibName, AY_OBFUSCATE("il2cpp_string_new")));
     il2cpp::il2cpp_string_new_utf16 = reinterpret_cast<System_String_o *(*)(const Il2CppChar *text,
                                                                             int len)>(getSymAddress(
-            targetLibName, OBFUSCATE("il2cpp_string_new_utf16")));
+            targetLibName, AY_OBFUSCATE("il2cpp_string_new_utf16")));
 
     il2cpp::il2cpp_array_new = reinterpret_cast<void *(*)(Il2CppClass *klass,
                                                           size_t length)>(getSymAddress(
-            targetLibName, OBFUSCATE("il2cpp_array_new")));
+            targetLibName, AY_OBFUSCATE("il2cpp_array_new")));
     il2cpp::il2cpp_value_box = reinterpret_cast<Il2CppObject *(*)(Il2CppClass *klass,
                                                                   void *data)>(getSymAddress(
-            targetLibName, OBFUSCATE("il2cpp_value_box")));
+            targetLibName, AY_OBFUSCATE("il2cpp_value_box")));
 
     il2cpp::System_String_Format = reinterpret_cast<System_String_o *(*)(System_String_o *format,
                                                                          System_Object_array *args)>(getAbsoluteAddressStr(
@@ -699,7 +699,7 @@ jobjectArray SettingsList(JNIEnv *env, jobject activityObject) {
     int Total_Feature = (sizeof features /
                          sizeof features[0]); //Now you dont have to manually update the number everytime;
     ret = (jobjectArray)
-            env->NewObjectArray(Total_Feature, env->FindClass(OBFUSCATE("java/lang/String")),
+            env->NewObjectArray(Total_Feature, env->FindClass(AY_OBFUSCATE("java/lang/String")),
                                 env->NewStringUTF(""));
     int i;
     for (i = 0; i < Total_Feature; i++)
@@ -752,7 +752,7 @@ jobjectArray GetFeatureList(JNIEnv *env, jobject context) {
     //Now you dont have to manually update the number everytime;
     int Total_Feature = (sizeof features / sizeof features[0]);
     ret = (jobjectArray)
-            env->NewObjectArray(Total_Feature, env->FindClass(OBFUSCATE("java/lang/String")),
+            env->NewObjectArray(Total_Feature, env->FindClass(AY_OBFUSCATE("java/lang/String")),
                                 env->NewStringUTF(""));
 
     for (int i = 0; i < Total_Feature; i++)
@@ -767,7 +767,7 @@ void Changes(JNIEnv *env, jclass clazz, jobject obj,
 
     auto cstr = str != NULL ? env->GetStringUTFChars(str, 0) : "";
 
-    LOGD(OBFUSCATE("Feature name: %d - %s | Value: = %d | Bool: = %d | Text: = %s"), featNum,
+    LOGD(AY_OBFUSCATE("Feature name: %d - %s | Value: = %d | Bool: = %d | Text: = %s"), featNum,
          env->GetStringUTFChars(featName, 0), value,
          boolean, cstr);
 
@@ -931,21 +931,21 @@ void lib_main() {
 
 int RegisterMenu(JNIEnv *env) {
     JNINativeMethod methods[] = {
-            {OBFUSCATE("Icon"),            OBFUSCATE(
+            {AY_OBFUSCATE("Icon"),            AY_OBFUSCATE(
                                                    "()Ljava/lang/String;"),                                                           reinterpret_cast<void *>(Icon)},
-            {OBFUSCATE("IconWebViewData"), OBFUSCATE(
+            {AY_OBFUSCATE("IconWebViewData"), AY_OBFUSCATE(
                                                    "()Ljava/lang/String;"),                                                           reinterpret_cast<void *>(IconWebViewData)},
-            {OBFUSCATE("IsGameLibLoaded"), OBFUSCATE(
+            {AY_OBFUSCATE("IsGameLibLoaded"), AY_OBFUSCATE(
                                                    "()Z"),                                                                            reinterpret_cast<void *>(isGameLibLoaded)},
-            {OBFUSCATE("Init"),            OBFUSCATE(
+            {AY_OBFUSCATE("Init"),            AY_OBFUSCATE(
                                                    "(Landroid/content/Context;Landroid/widget/TextView;Landroid/widget/TextView;)V"), reinterpret_cast<void *>(Init)},
-            {OBFUSCATE("SettingsList"),    OBFUSCATE(
+            {AY_OBFUSCATE("SettingsList"),    AY_OBFUSCATE(
                                                    "()[Ljava/lang/String;"),                                                          reinterpret_cast<void *>(SettingsList)},
-            {OBFUSCATE("GetFeatureList"),  OBFUSCATE(
+            {AY_OBFUSCATE("GetFeatureList"),  AY_OBFUSCATE(
                                                    "()[Ljava/lang/String;"),                                                          reinterpret_cast<void *>(GetFeatureList)},
     };
 
-    jclass clazz = env->FindClass(OBFUSCATE("com/android/support/Menu"));
+    jclass clazz = env->FindClass(AY_OBFUSCATE("com/android/support/Menu"));
     if (!clazz)
         return JNI_ERR;
     if (env->RegisterNatives(clazz, methods, sizeof(methods) / sizeof(methods[0])) != 0)
@@ -955,11 +955,11 @@ int RegisterMenu(JNIEnv *env) {
 
 int RegisterPreferences(JNIEnv *env) {
     JNINativeMethod methods[] = {
-            {OBFUSCATE("Changes"),
-             OBFUSCATE("(Landroid/content/Context;ILjava/lang/String;IZLjava/lang/String;)V"),
+            {AY_OBFUSCATE("Changes"),
+             AY_OBFUSCATE("(Landroid/content/Context;ILjava/lang/String;IZLjava/lang/String;)V"),
              reinterpret_cast<void *>(Changes)},
     };
-    jclass clazz = env->FindClass(OBFUSCATE("com/android/support/Preferences"));
+    jclass clazz = env->FindClass(AY_OBFUSCATE("com/android/support/Preferences"));
     if (!clazz)
         return JNI_ERR;
     if (env->RegisterNatives(clazz, methods, sizeof(methods) / sizeof(methods[0])) != 0)
@@ -969,10 +969,10 @@ int RegisterPreferences(JNIEnv *env) {
 
 int RegisterMain(JNIEnv *env) {
     JNINativeMethod methods[] = {
-            {OBFUSCATE("CheckOverlayPermission"), OBFUSCATE("(Landroid/content/Context;)V"),
+            {AY_OBFUSCATE("CheckOverlayPermission"), AY_OBFUSCATE("(Landroid/content/Context;)V"),
              reinterpret_cast<void *>(CheckOverlayPermission)},
     };
-    jclass clazz = env->FindClass(OBFUSCATE("com/android/support/Main"));
+    jclass clazz = env->FindClass(AY_OBFUSCATE("com/android/support/Main"));
     if (!clazz)
         return JNI_ERR;
     if (env->RegisterNatives(clazz, methods, sizeof(methods) / sizeof(methods[0])) != 0)

@@ -74,7 +74,7 @@ MemoryBackup::MemoryBackup(uintptr_t absolute_address, size_t backup_size) {
 
   std::string MemoryBackup::get_CurrBytes() {
     if (!isValid()) 
-      _hexString = std::string(OBFUSCATE("0xInvalid"));
+      _hexString = std::string(AY_OBFUSCATE("0xInvalid"));
       else 
       _hexString = KittyMemory::read2HexStr(reinterpret_cast<const void *>(_address), _size);
 

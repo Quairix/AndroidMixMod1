@@ -163,7 +163,7 @@ extern "C" size_t MSGetInstructionWidth(void *start) {
 static size_t SubstrateHookFunctionThumb(SubstrateProcessRef process, void *symbol, void *replace, void **result) {
     if (symbol == NULL)
         return 0;
-printf(OBFUSCATE("SubstrateHookFunctionThumb\n"));
+printf(AY_OBFUSCATE("SubstrateHookFunctionThumb\n"));
     uint16_t *area(reinterpret_cast<uint16_t *>(symbol));
 
     unsigned align((reinterpret_cast<uintptr_t>(area) & 0x2) == 0 ? 0 : 1);
@@ -562,7 +562,7 @@ printf(OBFUSCATE("SubstrateHookFunctionThumb\n"));
 static size_t SubstrateHookFunctionARM(SubstrateProcessRef process, void *symbol, void *replace, void **result) {
     if (symbol == NULL)
         return 0;
-    printf(OBFUSCATE("SubstrateHookFunctionARM\n"));
+    printf(AY_OBFUSCATE("SubstrateHookFunctionARM\n"));
     uint32_t *area(reinterpret_cast<uint32_t *>(symbol));
     uint32_t *arm(area);
 
@@ -665,7 +665,7 @@ static size_t SubstrateHookFunctionARM(SubstrateProcessRef process, void *symbol
     buffer[start+1] = reinterpret_cast<uint32_t>(area + used / sizeof(uint32_t));
 
     if (mprotect(buffer, length, PROT_READ | PROT_EXEC) == -1) {
-        MSLog(MSLogLevelError, OBFUSCATE("MS:Error:mprotect():%d"), errno);
+        MSLog(MSLogLevelError, AY_OBFUSCATE("MS:Error:mprotect():%d"), errno);
         goto fail;
     }
 
@@ -717,7 +717,7 @@ static size_t MSGetInstructionWidthIntel(void *start) {
 static void
 SubstrateHookFunction(SubstrateProcessRef process, void *symbol, void *replace, void **result) {
     if (MSDebug)
-     MSLog(MSLogLevelNotice, OBFUSCATE("MSHookFunction(%p, %p, %p)\n"), symbol, replace, result);
+     MSLog(MSLogLevelNotice, AY_OBFUSCATE("MSHookFunction(%p, %p, %p)\n"), symbol, replace, result);
     if (symbol == NULL)
         return;
 
@@ -730,7 +730,7 @@ SubstrateHookFunction(SubstrateProcessRef process, void *symbol, void *replace, 
 
     if (MSDebug) {
         char name[16];
-        sprintf(name, OBFUSCATE("%p"), area);
+        sprintf(name, AY_OBFUSCATE("%p"), area);
         MSLogHex(area, 32, name);
     }
 
@@ -749,7 +749,7 @@ SubstrateHookFunction(SubstrateProcessRef process, void *symbol, void *replace, 
 
     if (MSDebug) {
         char name[16];
-        sprintf(name, OBFUSCATE("%p"), area);
+        sprintf(name, AY_OBFUSCATE("%p"), area);
         MSLogHex(area, used + sizeof(uint16_t), name);
     }
 
@@ -829,7 +829,7 @@ SubstrateHookFunction(SubstrateProcessRef process, void *symbol, void *replace, 
         )));
 
         if (buffer == MAP_FAILED) {
-            MSLog(MSLogLevelError, OBFUSCATE("MS:Error:mmap() = %d"), errno);
+            MSLog(MSLogLevelError, AY_OBFUSCATE("MS:Error:mmap() = %d"), errno);
             *result = NULL;
             return;
         }
@@ -907,7 +907,7 @@ SubstrateHookFunction(SubstrateProcessRef process, void *symbol, void *replace, 
         }
 
         if (mprotect(buffer, length, PROT_READ | PROT_EXEC) == -1) {
-            MSLog(MSLogLevelError, OBFUSCATE("MS:Error:mprotect():%d"), errno);
+            MSLog(MSLogLevelError, AY_OBFUSCATE("MS:Error:mprotect():%d"), errno);
             goto fail;
         }
 
@@ -915,7 +915,7 @@ SubstrateHookFunction(SubstrateProcessRef process, void *symbol, void *replace, 
 
         if (MSDebug) {
             char name[16];
-            sprintf(name, OBFUSCATE("%p"), *result);
+            sprintf(name, AY_OBFUSCATE("%p"), *result);
             MSLogHex(buffer, length, name);
         }
 
@@ -931,7 +931,7 @@ SubstrateHookFunction(SubstrateProcessRef process, void *symbol, void *replace, 
 
     if (MSDebug) {
         char name[16];
-        sprintf(name, OBFUSCATE("%p"), area);
+        sprintf(name, AY_OBFUSCATE("%p"), area);
         MSLogHex(area, used + sizeof(uint16_t), name);
     }
 }

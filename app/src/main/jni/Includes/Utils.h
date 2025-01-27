@@ -20,11 +20,11 @@ DWORD findLibrary(const char *library) {
     FILE *fp = NULL;
     DWORD address = 0;
 
-    sprintf(filename, OBFUSCATE("/proc/self/maps"));
+    sprintf(filename, AY_OBFUSCATE("/proc/self/maps"));
 
-    fp = fopen(filename, OBFUSCATE("rt"));
+    fp = fopen(filename, AY_OBFUSCATE("rt"));
     if (fp == NULL) {
-        perror(OBFUSCATE("fopen"));
+        perror(AY_OBFUSCATE("fopen"));
         goto done;
     }
 
@@ -44,7 +44,7 @@ DWORD findLibrary(const char *library) {
     return address;
 }
 
-#define getAbsoluteAddressStr(libraryName, relativeAddr) getAbsoluteAddress(libraryName, string2Offset(OBFUSCATE(relativeAddr)))
+#define getAbsoluteAddressStr(libraryName, relativeAddr) getAbsoluteAddress(libraryName, string2Offset(AY_OBFUSCATE(relativeAddr)))
 
 DWORD getAbsoluteAddress(const char *libraryName, DWORD relativeAddr) {
     libBase = findLibrary(libraryName);
@@ -65,7 +65,7 @@ jboolean isGameLibLoaded(JNIEnv *env, jobject thiz) {
 bool isLibraryLoaded(const char *libraryName) {
     //libLoaded = true;
     char line[512] = {0};
-    FILE *fp = fopen(OBFUSCATE("/proc/self/maps"), OBFUSCATE("rt"));
+    FILE *fp = fopen(AY_OBFUSCATE("/proc/self/maps"), AY_OBFUSCATE("rt"));
     if (fp != NULL) {
         while (fgets(line, sizeof(line), fp)) {
             std::string a = line;
