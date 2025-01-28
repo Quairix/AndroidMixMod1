@@ -7,6 +7,20 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
+      - name: Cache Android SDK
+        uses: actions/cache@v3
+        with:
+          path: ~/.android
+          key: android-sdk-${{ runner.os }}-${{ hashFiles('**/build.gradle', '**/build.gradle.kts') }}
+          restore-keys: |
+            android-sdk-${{ runner.os }}-
+
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+        with:
+          cmdline-tools-version: 12266719
+          packages: 'platform-tools platforms;android-31 build-tools;30.0.3 ndk;26.3.11579264'
+
       - name: Cache Hearthstone APK
         uses: actions/cache@v3
         id: apk-cache
