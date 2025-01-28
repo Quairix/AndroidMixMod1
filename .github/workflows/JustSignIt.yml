@@ -1,0 +1,54 @@
+name: Just Sign workflow
+
+on:
+  workflow_dispatch:
+      
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Cache Hearthstone APK
+        uses: actions/cache@v3
+        id: apk-cache
+        with:
+          path: ${{ github.workspace }}/downloads/hs.apk
+          key: hs-apk
+          restore-keys: |
+            hs-apk-
+
+      - name: Download Hearthstone APK
+        if: steps.apk-cache.outputs.cache-hit != 'true'
+        run: |
+          repo_dir=$(pwd)
+          mkdir -p ${{ github.workspace }}/downloads/
+          curl -L "${{ secrets.READY_APK_URL }}" -o "${{ github.workspace }}/downloads/hs.apk"
+
+      - name: Copy hearthstone apk
+        run: |
+          repo_dir=$(pwd)
+          cd ../downloads/
+          mkdir ../Release/
+          cp ${{ env.apk_folder_name }} ../Release/HearthstoneMixMod_${{ secrets.VERSION }}.apk
+          cd ${repo_dir}
+
+      - name: Signing hearthstone apk
+        uses: kevin-david/zipalign-sign-android-release@v1.1
+        id: sign_app
+        with:
+          releaseDirectory: ../Release/
+          signingKeyBase64: ${{ secrets.SIGNING_KEY }}
+          alias: ${{ secrets.ALIAS }}
+          keyStorePassword: ${{ secrets.KEY_STORE_PASSWORD }}
+          keyPassword: ${{ secrets.KEY_PASSWORD }}
+          zipAlign: true
+
+      - name: Prepare to release
+        run: |
+          mkdir ../Release/signed/
+          mv ${{steps.sign_app.outputs.signedReleaseFile}} ../Release/signed/${{ env.mixmod_apk_name }}
+
+      - uses: ncipollo/release-action@v1
+        with:
+          tag: ${{ secrets.VERSION }}
+          name: v. ${{ secrets.VERSION }}
+          artifacts: ../Release/signed/${{ env.mixmod_apk_name }}
