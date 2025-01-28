@@ -26,16 +26,16 @@ jobs:
       - name: Copy hearthstone apk
         run: |
           repo_dir=$(pwd)
-          cd ../downloads/
-          mkdir ../Release/
-          cp ${{ env.apk_folder_name }} ../Release/HearthstoneMixMod_${{ secrets.VERSION }}.apk
+          mixmod_apk_name="HearthstoneMixMod_${{ secrets.VERSION }}.apk"
+          mkdir -p ${{ github.workspace }}/Release/
+          cp ${{ github.workspace }}/downloads/hs.apk Release/${{ env.mixmod_apk_name }}
           cd ${repo_dir}
 
       - name: Signing hearthstone apk
         uses: kevin-david/zipalign-sign-android-release@v1.1
         id: sign_app
         with:
-          releaseDirectory: ../Release/
+          releaseDirectory: ${{ github.workspace }}/Release/
           signingKeyBase64: ${{ secrets.SIGNING_KEY }}
           alias: ${{ secrets.ALIAS }}
           keyStorePassword: ${{ secrets.KEY_STORE_PASSWORD }}
@@ -44,11 +44,11 @@ jobs:
 
       - name: Prepare to release
         run: |
-          mkdir ../Release/signed/
-          mv ${{steps.sign_app.outputs.signedReleaseFile}} ../Release/signed/${{ env.mixmod_apk_name }}
+          mkdir ${{ github.workspace }}/Release/signed/
+          mv ${{steps.sign_app.outputs.signedReleaseFile}} ${{ github.workspace }}/Release/signed/${{ env.mixmod_apk_name }}
 
       - uses: ncipollo/release-action@v1
         with:
           tag: ${{ secrets.VERSION }}
           name: v. ${{ secrets.VERSION }}
-          artifacts: ../Release/signed/${{ env.mixmod_apk_name }}
+          artifacts: ${{ github.workspace }}/Release/signed/${{ env.mixmod_apk_name }}
