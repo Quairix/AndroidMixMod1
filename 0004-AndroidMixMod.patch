@@ -1,13 +1,66 @@
-Subject: [PATCH] patch4
----
-Index: downloads/hs_decompiled/smali/com/blizzard/wtcg/hearthstone/FileUtils.smali
-IDEA additional info:
-Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
-<+>UTF-8
-===================================================================
-diff --git a/smali/com/blizzard/wtcg/hearthstone/FileUtils.smali b/smali/com/blizzard/wtcg/hearthstone/FileUtils.smali
---- a/smali/com/blizzard/wtcg/hearthstone/FileUtils.smali	(revision 7933c12b713bb636ae3aa06ece22220685daa679)
-+++ b/smali/com/blizzard/wtcg/hearthstone/FileUtils.smali	(date 1738408379895)
+diff --git a/downloads/hs/AndroidManifest.xml b/downloads/hs/AndroidManifest.xml
+index 8d4c84e..ec0bcaf 100644
+--- a/downloads/hs/AndroidManifest.xml
++++ b/downloads/hs/AndroidManifest.xml
+@@ -2,6 +2,7 @@
+     <uses-permission android:name="com.android.vending.BILLING"/>
+     <uses-permission android:name="com.google.android.finsky.permission.BIND_GET_INSTALL_REFERRER_SERVICE"/>
+     <uses-permission android:name="com.google.android.gms.permission.AD_ID"/>
++    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW"/>
+     <uses-permission android:name="com.android.vending.CHECK_LICENSE"/>
+     <supports-screens android:anyDensity="true" android:largeScreens="true" android:normalScreens="true" android:smallScreens="true" android:xlargeScreens="true"/>
+     <uses-permission android:name="android.permission.INTERNET"/>
+@@ -58,6 +59,7 @@
+     <uses-permission android:name="android.permission.WRITE_INTERNAL_STORAGE"/>
+     <application android:allowBackup="true" android:appCategory="game" android:appComponentFactory="androidx.core.app.CoreComponentFactory" android:fullBackupContent="@xml/appsflyer_backup_rules" android:icon="@mipmap/app_icon" android:label="@string/app_name" android:largeHeap="true" android:name="com.blizzard.wtcg.hearthstone.HearthstoneApplication" android:networkSecurityConfig="@xml/network_security_config" android:roundIcon="@mipmap/app_icon_round" android:supportsRtl="true" android:usesCleartextTraffic="true">
+         <meta-data android:name="com.blizzard.wtcg.hearthstone.Store" android:value="Google"/>
++        <service android:name="com.android.support.Launcher" android:enabled="true" android:exported="false" android:stopWithTask="true" />
+         <activity android:exported="false" android:name="com.braze.ui.BrazeWebViewActivity"/>
+         <activity android:exported="false" android:name="com.braze.ui.activities.BrazeFeedActivity"/>
+         <activity android:exported="false" android:name="com.braze.ui.activities.ContentCardsActivity"/>
+diff --git a/downloads/hs/smali/com/blizzard/mobile/auth/internal/packagevalidator/BasePackageValidator.smali b/downloads/hs/smali/com/blizzard/mobile/auth/internal/packagevalidator/BasePackageValidator.smali
+index 81bcea5..bfb5aca 100644
+--- a/downloads/hs/smali/com/blizzard/mobile/auth/internal/packagevalidator/BasePackageValidator.smali
++++ b/downloads/hs/smali/com/blizzard/mobile/auth/internal/packagevalidator/BasePackageValidator.smali
+@@ -192,8 +192,6 @@
+ 
+     if-nez v1, :cond_0
+ 
+-    invoke-virtual {p0, p1, v0}, Lcom/blizzard/mobile/auth/internal/packagevalidator/BasePackageValidator;->validateSigningKeyForAccountType(Landroid/content/Context;Ljava/lang/String;)V
+-
+     return-object v0
+ 
+     :cond_0
+@@ -277,7 +275,7 @@
+ 
+     invoke-virtual {v4, v3}, Ljava/lang/String;->equals(Ljava/lang/Object;)Z
+ 
+-    move-result v3
++    const/4 v3, 0x1
+ 
+     if-eqz v3, :cond_0
+ 
+@@ -300,14 +298,14 @@
+ 
+     move-result v0
+ 
+-    if-eqz v0, :cond_2
++    if-nez v0, :cond_2
+ 
+     goto :goto_3
+ 
+     :cond_2
+     new-instance p1, Lcom/blizzard/mobile/auth/error/IllegalAccountTypeException;
+ 
+-    const-string p2, "Illegal MASDK_ACCOUNT_TYPE. The application was signed with the Blizzard Release signing key but the account type was not set to com.blizzard.mobile.auth"
++    const-string p2, "Illegal MASDK_ACCOUNT_TYPE. The application was signed with the Blizzard Release signing key but the account type was set to com.blizzard.mobile.auth"
+ 
+     invoke-direct {p1, p2}, Lcom/blizzard/mobile/auth/error/IllegalAccountTypeException;-><init>(Ljava/lang/String;)V
+ 
+diff --git a/downloads/hs/smali/com/blizzard/wtcg/hearthstone/FileUtils.smali b/downloads/hs/smali/com/blizzard/wtcg/hearthstone/FileUtils.smali
+index 533188a..3e905e1 100644
+--- a/downloads/hs/smali/com/blizzard/wtcg/hearthstone/FileUtils.smali
++++ b/downloads/hs/smali/com/blizzard/wtcg/hearthstone/FileUtils.smali
 @@ -1248,7 +1248,23 @@
  .end method
  
@@ -41,38 +94,10 @@ diff --git a/smali/com/blizzard/wtcg/hearthstone/FileUtils.smali b/smali/com/bli
      return-object v0
  .end method
  
-Index: downloads/hs_decompiled/AndroidManifest.xml
-IDEA additional info:
-Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
-<+>UTF-8
-===================================================================
-diff --git a/AndroidManifest.xml b/AndroidManifest.xml
---- a/AndroidManifest.xml	(revision 7933c12b713bb636ae3aa06ece22220685daa679)
-+++ b/AndroidManifest.xml	(date 1738408379910)
-@@ -2,6 +2,7 @@
-     <uses-permission android:name="com.android.vending.BILLING"/>
-     <uses-permission android:name="com.google.android.finsky.permission.BIND_GET_INSTALL_REFERRER_SERVICE"/>
-     <uses-permission android:name="com.google.android.gms.permission.AD_ID"/>
-+    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW"/>
-     <uses-permission android:name="com.android.vending.CHECK_LICENSE"/>
-     <supports-screens android:anyDensity="true" android:largeScreens="true" android:normalScreens="true" android:smallScreens="true" android:xlargeScreens="true"/>
-     <uses-permission android:name="android.permission.INTERNET"/>
-@@ -58,6 +59,7 @@
-     <uses-permission android:name="android.permission.WRITE_INTERNAL_STORAGE"/>
-     <application android:allowBackup="true" android:appCategory="game" android:appComponentFactory="androidx.core.app.CoreComponentFactory" android:fullBackupContent="@xml/appsflyer_backup_rules" android:icon="@mipmap/app_icon" android:label="@string/app_name" android:largeHeap="true" android:name="com.blizzard.wtcg.hearthstone.HearthstoneApplication" android:networkSecurityConfig="@xml/network_security_config" android:roundIcon="@mipmap/app_icon_round" android:supportsRtl="true" android:usesCleartextTraffic="true">
-         <meta-data android:name="com.blizzard.wtcg.hearthstone.Store" android:value="Google"/>
-+        <service android:name="com.android.support.Launcher" android:enabled="true" android:exported="false" android:stopWithTask="true" />
-         <activity android:exported="false" android:name="com.braze.ui.BrazeWebViewActivity"/>
-         <activity android:exported="false" android:name="com.braze.ui.activities.BrazeFeedActivity"/>
-         <activity android:exported="false" android:name="com.braze.ui.activities.ContentCardsActivity"/>
-Index: downloads/hs_decompiled/smali/com/blizzard/wtcg/hearthstone/HearthstoneActivity.smali
-IDEA additional info:
-Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
-<+>UTF-8
-===================================================================
-diff --git a/smali/com/blizzard/wtcg/hearthstone/HearthstoneActivity.smali b/smali/com/blizzard/wtcg/hearthstone/HearthstoneActivity.smali
---- a/smali/com/blizzard/wtcg/hearthstone/HearthstoneActivity.smali	(revision 7933c12b713bb636ae3aa06ece22220685daa679)
-+++ b/smali/com/blizzard/wtcg/hearthstone/HearthstoneActivity.smali	(date 1738408379895)
+diff --git a/downloads/hs/smali/com/blizzard/wtcg/hearthstone/HearthstoneActivity.smali b/downloads/hs/smali/com/blizzard/wtcg/hearthstone/HearthstoneActivity.smali
+index 8d390cb..4cae6a7 100644
+--- a/downloads/hs/smali/com/blizzard/wtcg/hearthstone/HearthstoneActivity.smali
++++ b/downloads/hs/smali/com/blizzard/wtcg/hearthstone/HearthstoneActivity.smali
 @@ -344,6 +344,10 @@
  
  .method public onCreate(Landroid/os/Bundle;)V
@@ -83,21 +108,4 @@ diff --git a/smali/com/blizzard/wtcg/hearthstone/HearthstoneActivity.smali b/sma
 +
  
      invoke-super {p0, p1}, Lcom/unity3d/player/HearthstoneUnityPlayerActivity;->onCreate(Landroid/os/Bundle;)V
- 
-Index: downloads/hs_decompiled/smali/com/blizzard/mobile/auth/internal/packagevalidator/BasePackageValidator.smali
-IDEA additional info:
-Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
-<+>UTF-8
-===================================================================
-diff --git a/smali/com/blizzard/mobile/auth/internal/packagevalidator/BasePackageValidator.smali b/smali/com/blizzard/mobile/auth/internal/packagevalidator/BasePackageValidator.smali
---- a/smali/com/blizzard/mobile/auth/internal/packagevalidator/BasePackageValidator.smali	(revision 7933c12b713bb636ae3aa06ece22220685daa679)
-+++ b/smali/com/blizzard/mobile/auth/internal/packagevalidator/BasePackageValidator.smali	(date 1738408379878)
-@@ -277,7 +277,7 @@
- 
-     invoke-virtual {v4, v3}, Ljava/lang/String;->equals(Ljava/lang/Object;)Z
- 
--    move-result v3
-+    const/4 v3, 0x1
- 
-     if-eqz v3, :cond_0
  
