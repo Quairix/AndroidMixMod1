@@ -149,16 +149,16 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
-#      - name: Setup .NET 6.0
-#        uses: actions/setup-dotnet@v1
-#        with:
-#          dotnet-version: 6.0.x
+      - name: Setup .NET 6.0
+        uses: actions/setup-dotnet@v1
+        with:
+          dotnet-version: 6.0.x
 
-#      - name: Setup Android SDK Build Tools
-#        uses: android-actions/setup-android@v3
-#        with:
-#          cmdline-tools-version: 12266719
-#          packages: 'build-tools;32.0.0'
+      - name: Setup Android SDK Build Tools
+        uses: android-actions/setup-android@v3
+        with:
+          cmdline-tools-version: 12266719
+          packages: 'build-tools;32.0.0'
 
       - name: Download downloads artifact
         uses: actions/download-artifact@v4
@@ -175,114 +175,66 @@ jobs:
         run: echo "apk_folder_path=$(pwd)/hs" >> $GITHUB_ENV
         working-directory: downloads
 
-      - name: Save original files before patch
-        run: |
-          mkdir -p $GITHUB_WORKSPACE/original_files
-          cd downloads/hs
-          cp --parents \
-            AndroidManifest.xml \
-            smali/com/blizzard/mobile/auth/internal/packagevalidator/BasePackageValidator.smali \
-            smali/com/blizzard/wtcg/hearthstone/FileUtils.smali \
-            smali/com/blizzard/wtcg/hearthstone/HearthstoneActivity.smali \
-            smali/com/blizzard/wtcg/hearthstone/LoadingScreen.smali \
-            apktool.yml \
-            $GITHUB_WORKSPACE/original_files
-          cd $GITHUB_WORKSPACE
-      - name: Archive original files
-        run: |
-          tar -czf original_files.tar.gz original_files
-      - name: Upload original files artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: original-files
-          path: original_files.tar.gz
-
       - name: Apply patch with conflict output
         run: |
           git apply --reject ${{ github.workspace }}/0004-AndroidMixMod.patch
         working-directory: ${{ github.workspace }}
 
-      - name: Find rej
+      - name: Dump with Il2CppDumper
         run: |
-          find . -name "*.rej" || echo "No .rej files found."
+          mkdir -p arm64-v8a
+          dotnet Il2CppDumper/Il2CppDumper.dll hs/lib/arm64-v8a/libil2cpp.so hs/assets/bin/Data/Managed/Metadata/global-metadata.dat arm64-v8a/
+          dotnet Il2CppDumper/Il2CppDumper.dll hs/lib/arm64-v8a/libil2cpp.so hs/assets/bin/Data/Managed/Metadata/global-metadata.dat arm64-v8a/ --no-cpp
+        working-directory: downloads
 
-      - name: Save patched files after patch
+      - name: Generate offsets
         run: |
-          mkdir -p $GITHUB_WORKSPACE/patched_files
-          cd downloads/hs
-          cp --parents \
-            AndroidManifest.xml \
-            smali/com/blizzard/mobile/auth/internal/packagevalidator/BasePackageValidator.smali \
-            smali/com/blizzard/wtcg/hearthstone/FileUtils.smali \
-            smali/com/blizzard/wtcg/hearthstone/HearthstoneActivity.smali \
-            smali/com/blizzard/wtcg/hearthstone/LoadingScreen.smali \
-            apktool.yml \
-            $GITHUB_WORKSPACE/patched_files
-          cd $GITHUB_WORKSPACE
-      - name: Archive patched files
+          chmod +x Generator/Generator
+          Generator/Generator ${{ github.workspace }}/OffsetsTemplate.json arm64-v8a/script.json hs/lib/arm64-v8a/libil2cpp.so ARM64 >> ${{ github.workspace }}/app/src/main/jni/Includes/Offsets.h
+        working-directory: downloads
+
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+
+      - name: Build with Gradle
         run: |
-          tar -czf patched_files.tar.gz patched_files
-      - name: Upload patched files artifact
-        uses: actions/upload-artifact@v4
+          ./gradlew clean
+          ./gradlew build
+
+      - name: Decompile apk
+        run: java -jar downloads/apktool.jar d ${{ github.workspace }}/app/build/outputs/apk/release/app-release.apk -o MixMod
+
+      - name: Modify Hearthstone apk
+        run: |
+          smali_dirs=(./downloads/hs/smali*)
+          last_smali_dir="${smali_dirs[${#smali_dirs[@]}-1]}"
+          cp -R MixMod/smali/* "$last_smali_dir"
+          cp -R MixMod/lib/* ./downloads/hs/lib/
+
+      - name: Recompile Hearthstone apk
+        run: |
+          mkdir -p Release
+          java -jar downloads/apktool.jar b downloads/hs -o ./Release/HearthstoneMixMod_${{ secrets.VERSION }}.apk
+
+      - name: Signing Hearthstone apk
+        uses: kevin-david/zipalign-sign-android-release@v1.1
+        id: sign_app
         with:
-          name: patched-files
-          path: patched_files.tar.gz
-#
-#      - name: Dump with Il2CppDumper
-#        run: |
-#          mkdir -p arm64-v8a
-#          dotnet Il2CppDumper/Il2CppDumper.dll hs/lib/arm64-v8a/libil2cpp.so hs/assets/bin/Data/Managed/Metadata/global-metadata.dat arm64-v8a/
-#          dotnet Il2CppDumper/Il2CppDumper.dll hs/lib/arm64-v8a/libil2cpp.so hs/assets/bin/Data/Managed/Metadata/global-metadata.dat arm64-v8a/ --no-cpp
-#        working-directory: downloads
-#
-#      - name: Generate offsets
-#        run: |
-#          chmod +x Generator/Generator
-#          Generator/Generator ${{ github.workspace }}/OffsetsTemplate.json arm64-v8a/script.json hs/lib/arm64-v8a/libil2cpp.so ARM64 >> ${{ github.workspace }}/app/src/main/jni/Includes/Offsets.h
-#        working-directory: downloads
-#
-#      - name: Grant execute permission for gradlew
-#        run: chmod +x gradlew
-#
-#      - name: Build with Gradle
-#        run: |
-#          ./gradlew clean
-#          ./gradlew build
-#
-#      - name: Decompile apk
-#        run: java -jar downloads/apktool.jar d ${{ github.workspace }}/app/build/outputs/apk/release/app-release.apk -o MixMod
-#
-#      - name: Modify Hearthstone apk
-#        run: |
-#          smali_dirs=(./downloads/hs/smali*)
-#          last_smali_dir="${smali_dirs[${#smali_dirs[@]}-1]}"
-#          cp -R MixMod/smali/* "$last_smali_dir"
-#          cp -R MixMod/lib/* ./downloads/hs/lib/
-#
-#      - name: Recompile Hearthstone apk
-#        run: |
-#          mkdir -p Release
-#          java -jar downloads/apktool.jar b downloads/hs -o ./Release/HearthstoneMixMod_${{ secrets.VERSION }}.apk
-#
-#      - name: Signing Hearthstone apk
-#        uses: kevin-david/zipalign-sign-android-release@v1.1
-#        id: sign_app
-#        with:
-#          releaseDirectory: Release
-#          signingKeyBase64: ${{ secrets.SIGNING_KEY }}
-#          alias: ${{ secrets.ALIAS }}
-#          keyStorePassword: ${{ secrets.KEY_STORE_PASSWORD }}
-#          keyPassword: ${{ secrets.KEY_PASSWORD }}
-#          zipAlign: true
-#
-#      - name: Prepare to release
-#        run: |
-#          mkdir -p Release/signed
-#          mv ${{ steps.sign_app.outputs.signedReleaseFile }} Release/signed/HearthstoneMixMod_${{ secrets.VERSION }}.apk
-#
-#      - name: Create Release
-#        uses: ncipollo/release-action@v1
-#        with:
-#          tag: "${{ secrets.VERSION }}"
-#          name: "v. ${{ secrets.VERSION }}"
-#          artifacts: "Release/signed/HearthstoneMixMod_${{ secrets.VERSION }}.apk"
+          releaseDirectory: Release
+          signingKeyBase64: ${{ secrets.SIGNING_KEY }}
+          alias: ${{ secrets.ALIAS }}
+          keyStorePassword: ${{ secrets.KEY_STORE_PASSWORD }}
+          keyPassword: ${{ secrets.KEY_PASSWORD }}
+          zipAlign: true
+
+      - name: Prepare to release
+        run: |
+          mkdir -p Release/signed
+          mv ${{ steps.sign_app.outputs.signedReleaseFile }} Release/signed/HearthstoneMixMod_${{ secrets.VERSION }}.apk
+
+      - name: Create Release
+        uses: ncipollo/release-action@v1
+        with:
+          tag: "${{ secrets.VERSION }}"
+          name: "v. ${{ secrets.VERSION }}"
+          artifacts: "Release/signed/HearthstoneMixMod_${{ secrets.VERSION }}.apk"
