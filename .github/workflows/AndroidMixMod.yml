@@ -5,6 +5,7 @@ on:
   push:
     branches:
       - main
+      - light
       - 'releases/**'
 
 jobs:
@@ -214,7 +215,7 @@ jobs:
       - name: Recompile Hearthstone apk
         run: |
           mkdir -p Release
-          java -jar downloads/apktool.jar b downloads/hs -o ./Release/HearthstoneMixMod_${{ secrets.VERSION }}.apk
+          java -jar downloads/apktool.jar b downloads/hs -o ./Release/HearthstoneMixMod_${{ secrets.VERSION }}_light.apk
 
       - name: Signing Hearthstone apk
         uses: kevin-david/zipalign-sign-android-release@v1.1
@@ -230,11 +231,11 @@ jobs:
       - name: Prepare to release
         run: |
           mkdir -p Release/signed
-          mv ${{ steps.sign_app.outputs.signedReleaseFile }} Release/signed/HearthstoneMixMod_${{ secrets.VERSION }}.apk
+          mv ${{ steps.sign_app.outputs.signedReleaseFile }} Release/signed/HearthstoneMixMod_${{ secrets.VERSION }}_light.apk
 
       - name: Create Release
         uses: ncipollo/release-action@v1
         with:
-          tag: "${{ secrets.VERSION }}"
-          name: "v. ${{ secrets.VERSION }}"
-          artifacts: "Release/signed/HearthstoneMixMod_${{ secrets.VERSION }}.apk"
+          tag: "${{ secrets.VERSION }}_light"
+          name: "v. ${{ secrets.VERSION }}_light"
+          artifacts: "Release/signed/HearthstoneMixMod_${{ secrets.VERSION }}_light.apk"
