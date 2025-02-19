@@ -306,19 +306,19 @@ void Changes(JNIEnv *env, jclass clazz, jobject obj,
 
     switch (featNum) {
         case 0:
-            timeScaleEnabled = true;
+            timeScaleEnabled = boolean;
             if (gameLoaded) {
                 Time_set_timeScale(originalTimeScale);
             }
             break;
         case 1:
-            timeScale = 6.0f;
+            timeScale = value / 100.0f;
             if (gameLoaded) {
                 Time_set_timeScale(originalTimeScale);
             }
             break;
         case 2:
-            timeScaleInGameOnlyEnabled = true;
+            timeScaleInGameOnlyEnabled = boolean;
             if (gameLoaded) {
                 Time_set_timeScale(originalTimeScale);
             }
