@@ -176,10 +176,43 @@ jobs:
         run: echo "apk_folder_path=$(pwd)/hs" >> $GITHUB_ENV
         working-directory: downloads
 
+      - name: Upload patch before rejects for inspection
+        uses: actions/upload-artifact@v4
+        with:
+          name: patch-before-debug
+          path: |
+            downloads/hs/AndroidManifest.xml
+            downloads/hs/smali/com/blizzard/mobile/auth/internal/packagevalidator/BasePackageValidator.smali
+            downloads/hs/smali/com/blizzard/wtcg/hearthstone/FileUtils.smali
+            downloads/hs/smali/com/blizzard/wtcg/hearthstone/HearthstoneActivity.smali
+            0005-AndroidMixMod.patch
+
       - name: Apply patch with conflict output
+        id: apply_patch
         run: |
-          git apply --reject ${{ github.workspace }}/0004-AndroidMixMod.patch
+          git apply --reject ${{ github.workspace }}/0005-AndroidMixMod.patch
         working-directory: ${{ github.workspace }}
+        continue-on-error: true
+
+      - name: Upload patch rejects for inspection
+        if: steps.apply_patch.outcome == 'failure'
+        uses: actions/upload-artifact@v4
+        with:
+          name: patch-fail-debug
+          path: |
+            downloads/hs/**/*.rej
+            downloads/hs/**/*.orig
+            downloads/hs/AndroidManifest.xml
+            downloads/hs/smali/com/blizzard/mobile/auth/internal/packagevalidator/BasePackageValidator.smali
+            downloads/hs/smali/com/blizzard/wtcg/hearthstone/FileUtils.smali
+            downloads/hs/smali/com/blizzard/wtcg/hearthstone/HearthstoneActivity.smali
+            0005-AndroidMixMod.patch
+
+      - name: Fail job if patch failed
+        if: steps.apply_patch.outcome == 'failure'
+        run: |
+          echo "Patch apply failed, aborting job."
+          exit 1
 
       - name: Dump with Il2CppDumper
         run: |
@@ -191,8 +224,15 @@ jobs:
       - name: Generate offsets
         run: |
           chmod +x Generator/Generator
-          Generator/Generator ${{ github.workspace }}/OffsetsTemplate.json arm64-v8a/script.json hs/lib/arm64-v8a/libil2cpp.so ARM64 >> ${{ github.workspace }}/app/src/main/jni/Includes/Offsets.h
+          Generator/Generator ${{ github.workspace }}/OffsetsTemplate.json arm64-v8a/script.json hs/lib/arm64-v8a/libil2cpp.so ARM64 > ${{ github.workspace }}/app/src/main/jni/Includes/Offsets.h
         working-directory: downloads
+
+      - name: Upload Offsets.h for inspection
+        uses: actions/upload-artifact@v4
+        with:
+          name: offsets-h-debug
+          path: |
+            ${{ github.workspace }}/app/src/main/jni/Includes/Offsets.h
 
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew

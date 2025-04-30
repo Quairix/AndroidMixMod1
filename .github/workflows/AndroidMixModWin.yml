@@ -112,7 +112,7 @@ jobs:
         run: |
           $repoDir = Get-Location
           cd "..\downloads\$env:apkFolderName"
-          git apply --reject "$repoDir\0004-AndroidMixMod.patch"
+          git apply --reject "$repoDir\0005-AndroidMixMod.patch"
 
       - name: Cache Il2CppDumper
         uses: actions/cache@v3

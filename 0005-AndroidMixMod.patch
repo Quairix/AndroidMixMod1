@@ -1,16 +1,18 @@
 diff --git a/downloads/hs/AndroidManifest.xml b/downloads/hs/AndroidManifest.xml
-index 8d4c84e..ec0bcaf 100644
+index 7de73b9..e4a4cc6 100644
 --- a/downloads/hs/AndroidManifest.xml
 +++ b/downloads/hs/AndroidManifest.xml
-@@ -2,6 +2,7 @@
+@@ -2,6 +2,9 @@
      <uses-permission android:name="com.android.vending.BILLING"/>
      <uses-permission android:name="com.google.android.finsky.permission.BIND_GET_INSTALL_REFERRER_SERVICE"/>
      <uses-permission android:name="com.google.android.gms.permission.AD_ID"/>
 +    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW"/>
++    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
++    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
      <uses-permission android:name="com.android.vending.CHECK_LICENSE"/>
      <supports-screens android:anyDensity="true" android:largeScreens="true" android:normalScreens="true" android:smallScreens="true" android:xlargeScreens="true"/>
      <uses-permission android:name="android.permission.INTERNET"/>
-@@ -62,6 +63,7 @@
+@@ -62,6 +65,7 @@
      <uses-permission android:name="android.permission.WRITE_INTERNAL_STORAGE"/>
      <application android:allowBackup="true" android:appCategory="game" android:appComponentFactory="androidx.core.app.CoreComponentFactory" android:dataExtractionRules="@xml/appsflyer_data_extraction_rules" android:fullBackupContent="@xml/appsflyer_backup_rules" android:icon="@mipmap/app_icon" android:label="@string/app_name" android:largeHeap="true" android:name="com.blizzard.wtcg.hearthstone.HearthstoneApplication" android:networkSecurityConfig="@xml/network_security_config" android:roundIcon="@mipmap/app_icon_round" android:supportsRtl="true" android:usesCleartextTraffic="true">
          <meta-data android:name="com.blizzard.wtcg.hearthstone.Store" android:value="Google"/>
@@ -18,14 +20,52 @@ index 8d4c84e..ec0bcaf 100644
          <activity android:exported="false" android:name="com.braze.ui.BrazeWebViewActivity"/>
          <activity android:exported="false" android:name="com.braze.ui.activities.BrazeFeedActivity"/>
          <activity android:exported="false" android:name="com.braze.ui.activities.ContentCardsActivity"/>
+diff --git a/downloads/hs/smali/com/blizzard/mobile/auth/internal/packagevalidator/BasePackageValidator.smali b/downloads/hs/smali/com/blizzard/mobile/auth/internal/packagevalidator/BasePackageValidator.smali
+index 81bcea5..bfb5aca 100644
+--- a/downloads/hs/smali/com/blizzard/mobile/auth/internal/packagevalidator/BasePackageValidator.smali
++++ b/downloads/hs/smali/com/blizzard/mobile/auth/internal/packagevalidator/BasePackageValidator.smali
+@@ -192,8 +192,6 @@
+
+     if-nez v1, :cond_0
+
+-    invoke-virtual {p0, p1, v0}, Lcom/blizzard/mobile/auth/internal/packagevalidator/BasePackageValidator;->validateSigningKeyForAccountType(Landroid/content/Context;Ljava/lang/String;)V
+-
+     return-object v0
+
+     :cond_0
+@@ -277,7 +275,7 @@
+
+     invoke-virtual {v4, v3}, Ljava/lang/String;->equals(Ljava/lang/Object;)Z
+
+-    move-result v3
++    const/4 v3, 0x1
+
+     if-eqz v3, :cond_0
+
+@@ -300,14 +298,14 @@
+
+     move-result v0
+
+-    if-eqz v0, :cond_2
++    if-nez v0, :cond_2
+
+     goto :goto_3
+
+     :cond_2
+     new-instance p1, Lcom/blizzard/mobile/auth/error/IllegalAccountTypeException;
+
+-    const-string p2, "Illegal MASDK_ACCOUNT_TYPE. The application was signed with the Blizzard Release signing key but the account type was not set to com.blizzard.mobile.auth"
++    const-string p2, "Illegal MASDK_ACCOUNT_TYPE. The application was signed with the Blizzard Release signing key but the account type was set to com.blizzard.mobile.auth"
+
+     invoke-direct {p1, p2}, Lcom/blizzard/mobile/auth/error/IllegalAccountTypeException;-><init>(Ljava/lang/String;)V
 
 diff --git a/downloads/hs/smali/com/blizzard/wtcg/hearthstone/FileUtils.smali b/downloads/hs/smali/com/blizzard/wtcg/hearthstone/FileUtils.smali
-index 533188a..3e905e1 100644
+index a2798a1..479043e 100644
 --- a/downloads/hs/smali/com/blizzard/wtcg/hearthstone/FileUtils.smali
 +++ b/downloads/hs/smali/com/blizzard/wtcg/hearthstone/FileUtils.smali
 @@ -1248,7 +1248,23 @@
  .end method
- 
+
  .method public static GetInternalFilesDir()Ljava/io/File;
 -    .locals 1
 +    .locals 2
@@ -45,67 +85,29 @@ index 533188a..3e905e1 100644
 +    move-result-object v0
 +
 +    if-nez v0, :cond_0
- 
+
      invoke-static {}, Lcom/blizzard/wtcg/hearthstone/HearthstoneApplication;->getInstance()Lcom/blizzard/wtcg/hearthstone/HearthstoneApplication;
- 
+
 @@ -1262,6 +1278,7 @@
- 
+
      move-result-object v0
- 
+
 +    :cond_0
      return-object v0
  .end method
- 
+
 diff --git a/downloads/hs/smali/com/blizzard/wtcg/hearthstone/HearthstoneActivity.smali b/downloads/hs/smali/com/blizzard/wtcg/hearthstone/HearthstoneActivity.smali
-index 8d390cb..4cae6a7 100644
+index 1c8e126..f558e89 100644
 --- a/downloads/hs/smali/com/blizzard/wtcg/hearthstone/HearthstoneActivity.smali
 +++ b/downloads/hs/smali/com/blizzard/wtcg/hearthstone/HearthstoneActivity.smali
 @@ -307,6 +307,10 @@
- 
+
  .method public onCreate(Landroid/os/Bundle;)V
      .locals 2
 +    #### MixMod Start ####
 +    invoke-static {p0}, Lcom/android/support/Main;->Start(Landroid/content/Context;)V
 +    ####  MixMod End  ####
 +
- 
+
      new-instance v0, Lcom/unity3d/player/VkQualityHandler;
- 
-diff --git a/downloads/hs/smali/com/blizzard/mobile/auth/internal/packagevalidator/BasePackageValidator.smali b/downloads/hs/smali/com/blizzard/mobile/auth/internal/packagevalidator/BasePackageValidator.smali
---- a/downloads/hs/smali/com/blizzard/mobile/auth/internal/packagevalidator/BasePackageValidator.smali
-+++ b/downloads/hs/smali/com/blizzard/mobile/auth/internal/packagevalidator/BasePackageValidator.smali
-@@ -192,8 +192,6 @@
- 
-     if-nez v1, :cond_0
- 
--    invoke-virtual {p0, p1, v0}, Lcom/blizzard/mobile/auth/internal/packagevalidator/BasePackageValidator;->validateSigningKeyForAccountType(Landroid/content/Context;Ljava/lang/String;)V
--
-     return-object v0
- 
-     :cond_0
-@@ -277,7 +275,7 @@
- 
-     invoke-virtual {v4, v3}, Ljava/lang/String;->equals(Ljava/lang/Object;)Z
- 
--    move-result v3
-+    const/4 v3, 0x1
- 
-     if-eqz v3, :cond_0
- 
-@@ -300,14 +298,14 @@
- 
-     move-result v0
- 
--    if-eqz v0, :cond_2
-+    if-nez v0, :cond_2
- 
-     goto :goto_3
- 
-     :cond_2
-     new-instance p1, Lcom/blizzard/mobile/auth/error/IllegalAccountTypeException;
- 
--    const-string p2, "Illegal MASDK_ACCOUNT_TYPE. The application was signed with the Blizzard Release signing key but the account type was not set to com.blizzard.mobile.auth"
-+    const-string p2, "Illegal MASDK_ACCOUNT_TYPE. The application was signed with the Blizzard Release signing key but the account type was set to com.blizzard.mobile.auth"
- 
-     invoke-direct {p1, p2}, Lcom/blizzard/mobile/auth/error/IllegalAccountTypeException;-><init>(Ljava/lang/String;)V
- 
+

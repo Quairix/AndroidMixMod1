@@ -100,3 +100,4 @@ gradle/
 /downloads/Generator/
 /gradle/wrapper/
 /.idea/
+/cmake-build-debug/

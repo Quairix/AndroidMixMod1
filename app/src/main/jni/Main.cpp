@@ -13,6 +13,7 @@
 #include "KittyMemory/MemoryPatch.h"
 #include "Menu/Setup.h"
 #include "Localization/Localizations.h"
+#include "Includes/NativeCrashHandler.h"
 
 //Target lib here
 #define targetLibName OBFUSCATE("libil2cpp.so")
@@ -305,19 +306,19 @@ void Changes(JNIEnv *env, jclass clazz, jobject obj,
     //BE CAREFUL NOT TO ACCIDENTLY REMOVE break;
 
     switch (featNum) {
-        case 0:
+        case TIMESCALE_ENABLED:
             timeScaleEnabled = boolean;
             if (gameLoaded) {
                 Time_set_timeScale(originalTimeScale);
             }
             break;
-        case 1:
+        case TIMESCALE:
             timeScale = value / 100.0f;
             if (gameLoaded) {
                 Time_set_timeScale(originalTimeScale);
             }
             break;
-        case 2:
+        case TIMESCALE_IN_GAME_ONLY:
             timeScaleInGameOnlyEnabled = boolean;
             if (gameLoaded) {
                 Time_set_timeScale(originalTimeScale);
